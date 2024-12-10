@@ -1,0 +1,336 @@
+---
+title: "Stream Temperature Model Application - NRSA/NAWQA"
+format: 
+  html:
+    self-contained: true
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+### Libraries & Directories
+
+```{r, warning=F, message=F, eval=T}
+library(StreamCatTools)
+library(tidyverse)
+library(data.table)
+library(sf)
+library(prism)
+library(lubridate)
+library(knitr)
+library(spmodel)
+library(readr)
+
+# NHDPlus directory
+nhd_dir <- 'C:/Users/RHill04/WorkFolder/GIS/NHDPlusV21/'
+```
+
+### Prep data for Powell Center analysis
+
+```{r, warning=F, message=F, eval=T}
+pts <- fread('../data/FishSiteCOMIDs.csv')  %>%  
+  left_join(
+    read_rds(paste0(nhd_dir, 'cat-pour-points.rds'))  %>%  
+      rename(COMID = FEATUREID)  %>%  
+      dplyr::select(-AreaSqKM, -SOURCEFC, -GRIDCODE) %>% 
+      na.omit()
+  ) %>% 
+  st_as_sf(coords = c('LON_DD', 'LAT_DD'), 
+           crs = 4269)
+
+comids <- pts %>% 
+  pull(COMID) %>% 
+  na.omit()
+```
+
+### NHDPlus flow metrics
+
+Modeled monthly (July and August) flow estimates for each site (source: USGS)
+
+```{r, warning=F, message=F, eval=T}
+nhd_dir <- 
+  paste0(nhd_dir, 'NHDPlusNationalData/NHDPlusV21_National_Seamless_Flattened_Lower48.gdb')
+         
+nhd_flow <- 
+  st_read(dsn = paste0(nhd_dir),
+          layer = 'NHDFlowline_Network') %>%
+  st_drop_geometry() %>% 
+  dplyr::select(COMID, QE_07, QE_08) %>% 
+  pivot_longer(!COMID, names_to = 'tmpcol', values_to = 'nhdflow') %>% 
+  mutate(month = str_replace(tmpcol, 'QE_0', '') %>% 
+           as.integer()) %>% 
+  dplyr::select(-tmpcol)
+
+```
+
+### StreamCat (sc) static metrics
+
+Static watershed/local catchment metrics:
+
+- Elevation (Cat)
+- Calcium oxide content of underlying lithology (Ws)
+- Base flow index (Ws)
+- Water table depth (Ws)
+- Watershed area (Ws)
+- Runoff (ws)
+- Sand soil content (Ws)
+- Topographic wetness index (Ws)
+- National Anthropogenic Barriers dam normal storage (screened dams of NID) (Ws)
+
+```{r, warning=F, message=F, eval=T}
+# comids_missing <- flow$COMID %>% 
+#   na.omit()
+
+#Pull in static watershed metrics
+sc <- 
+  sc_get_data(metric = 'Runoff,Sand,WtDep,WetIndex,NABD_NRMSTOR,BFI,ELEV,CAO', 
+              aoi = 'catchment,watershed', 
+              comid = comids) %>% 
+  dplyr::select(COMID, ELEVCAT, CAOWS, BFIWS, WTDEPWS,
+                WSAREASQKM, RUNOFFWS, SANDWS, WETINDEXWS,
+                NABD_NRMSTORWS) 
+```
+
+### StreamCat Year-Specific NLCD data
+
+#### Riparian forest cover (catchment)
+
+```{r, warning=F, message=F, eval=T}
+riparian_forest <-
+  sc_nlcd(year = '2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019',
+          aoi = 'riparian_watershed',
+          comid = comids) %>% 
+  dplyr::select(COMID, 
+                grep('CONIF|DECID|MXFST', names(.))) %>% 
+  pivot_longer(!COMID, names_to = 'tmpcol', values_to = 'PCTFSTXXXXWSRP100') %>% 
+  mutate(year = as.integer(
+    str_replace_all(tmpcol, 'PCTMXFST|PCTDECID|PCTCONIF|WSRP100', ''))) %>% 
+  group_by(COMID, year) %>% 
+  summarise(PCTFSTXXXXWSRP100 = sum(PCTFSTXXXXWSRP100)) 
+```
+
+#### Crop cover (watershed)
+
+```{r, warning=F, message=F, eval=T}
+crop <-
+  sc_nlcd(year = '2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019',
+          aoi = 'watershed',
+          comid = comids) %>% 
+  dplyr::select(COMID, 
+                grep('CROP', names(.))) %>% 
+  pivot_longer(!COMID, names_to = 'tmpcol', values_to = 'PCTCROPXXXXWS') %>% 
+  mutate(year = as.integer(
+    str_replace_all(tmpcol, 'PCTCROP|WS', ''))) %>% 
+  dplyr::select(-tmpcol)
+```
+
+#### Urban cover (watershed)
+
+```{r, warning=F, message=F, eval=T}
+urban <-
+  sc_nlcd(year = '2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019',
+          aoi = 'watershed',
+          comid = comids) %>% 
+  dplyr::select(COMID, 
+                grep('PCTURBLO|PCTURBMD|PCTURBHI', names(.))) %>% 
+  pivot_longer(!COMID, names_to = 'tmpcol', values_to = 'PCTURBXXXXWS') %>% 
+  mutate(year = as.integer(
+    str_replace_all(tmpcol, 'PCTURBLO|PCTURBMD|PCTURBHI|WS', ''))) %>% 
+  group_by(COMID, year) %>% 
+  summarise(PCTURBXXXXWS = sum(PCTURBXXXXWS)) 
+```
+
+#### Lake/Reservoir (open water) in watershed (watershed)
+
+Variable added to interact with reservoir size to account for stations that occur below natural lakes or man made reservoirs.
+
+```{r, warning=F, message=F, eval=T}
+water <-
+  sc_nlcd(year = '2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019',
+          aoi = 'watershed',
+          comid = comids) %>% 
+  dplyr::select(COMID, 
+                grep('PCTOW', names(.))) %>% 
+  pivot_longer(!COMID, names_to = 'tmpcol', values_to = 'PCTOWXXXXWS') %>% 
+  mutate(year = as.integer(
+    str_replace_all(tmpcol, 'PCTOW|WS', ''))) %>% 
+  group_by(COMID, year) %>% 
+  summarise(PCTOWXXXXWS = sum(PCTOWXXXXWS)) 
+```
+
+### PRISM Climate Data 
+
+#### Air temperature
+
+```{r, warning=F, message=F, eval=T}
+years <- 1990:2020
+
+# Set the PRISM directory (creates directory in not present)
+prism_set_dl_dir("../data/prism_data", create = TRUE)
+
+# Download monthly PRISM rasters (tmean)
+get_prism_monthlys('tmean', 
+                   years = years, 
+                   mon = 7:8, 
+                   keepZip = FALSE)
+
+tmn <- pd_stack((prism_archive_subset("tmean","monthly", 
+                                      years = years, 
+                                      mon = 7:8)))
+
+# Extract tmean at sample points and massage data
+tmn <- terra::extract(tmn, 
+                      # Transform pts to CRS of PRISM on the fly
+                      pts %>% 
+                        st_transform(crs = st_crs(tmn))) %>%
+  
+  # Add site IDs to extracted values
+  data.frame(COMID = pts$COMID, .) %>%
+  
+  # Remove front and back text from PRISM year/month in names
+  rename_with( ~ stringr::str_replace_all(., 'PRISM_tmean_stable_4kmM3_|_bil', '')) %>% 
+  
+  # Pivot to long table and calle column tmeanPRISM
+  pivot_longer(!COMID, names_to = 'year_month', 
+               values_to = 'tmeanPRISM') %>% 
+  
+  # Create new column of year
+  mutate(year = year(ym(year_month)),
+         month = month(ym(year_month))) %>% 
+  
+  dplyr::select(-year_month)
+```
+
+#### Precipitation
+
+```{r, warning=F, message=F, eval=T}
+get_prism_monthlys('ppt', 
+                   years = years, 
+                   mon = 7:8, 
+                   keepZip = FALSE)
+
+ppt <- pd_stack((prism_archive_subset("ppt","monthly", 
+                                      years = years, 
+                                      mon = 7:8)))
+
+ppt <- terra::extract(ppt, 
+                      pts %>% 
+                        st_transform(crs = st_crs(ppt))) %>%
+  data.frame(COMID = pts$COMID, .) %>%
+  rename_with( ~ stringr::str_replace_all(., 'PRISM_ppt_stable_4kmM3_|_bil', '')) %>% 
+  pivot_longer(!COMID, names_to = 'year_month', 
+               values_to = 'pptPRISM') %>% 
+  mutate(year = year(ym(year_month)),
+         month = month(ym(year_month))) %>% 
+  
+  dplyr::select(-year_month)
+```
+
+#### Combine data for modeling
+
+```{r, warning=F, message=F, eval=T}
+nlcd_years <- 
+  data.table(year = c(2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019)) %>% 
+  mutate(merge = year) %>% 
+  setkeyv('merge')
+
+st_years <- 
+  data.table(year = 1990:2020) %>% 
+  mutate(merge = year) %>% 
+  setkeyv('merge')
+
+nearest <- 
+  nlcd_years[st_years, roll = 'nearest'] %>% 
+  dplyr::select(year, i.year) %>% 
+  rename(nlcd_year = year, 
+         year = i.year)
+
+powell.data <- tmn %>% 
+  left_join(nearest, join_by(year)) %>% 
+  left_join(ppt,
+            join_by(COMID, year, month)) %>% 
+  left_join(sc, join_by(COMID)) %>% 
+  left_join(riparian_forest, 
+            join_by(COMID == COMID,
+                    nlcd_year == year)) %>% 
+  left_join(crop, 
+            join_by(COMID == COMID,
+                    nlcd_year == year)) %>% 
+  left_join(urban,  
+            join_by(COMID == COMID,
+                    nlcd_year == year)) %>% 
+  left_join(nhd_flow,
+            join_by(COMID == COMID,
+                    month == month)) %>% 
+  left_join(water,  
+            join_by(COMID == COMID,
+                    nlcd_year == year)) %>% 
+  left_join(pts,
+            join_by(COMID == COMID)) %>% 
+  mutate(month = as.character(month),
+         COMID = as.character(COMID)) %>% 
+  st_as_sf(crs = 4269) %>% 
+  st_transform(crs = 5070)
+
+# Grab values from nearest site for WTDEP NA value
+
+ptna <- powell.data  %>%  
+  filter(is.na(WTDEPWS)) %>% 
+  dplyr::select(COMID) %>% 
+  distinct()
+
+dist_matrix <- st_distance(pts) 
+names(dist_matrix) <- pts$COMID
+rownames(dist_matrix) <- pts$COMID
+
+nearest <- dist_matrix[, grep(ptna$COMID, names(dist_matrix))]
+nearest <- data.frame(nearest) %>% 
+  distinct() %>% 
+  arrange(nearest) %>% 
+  slice_head(n=6) %>% 
+  row.names()
+
+powell.data$WTDEPWS[powell.data$COMID == ptna$COMID] <- mean(powell.data$WTDEPWS[powell.data$COMID %in% nearest], na.rm=T)
+
+# Write output file for modeling
+write_rds(powell.data, 
+          file = '../data/powell_data.2024.07.31.rds',
+          compress = "xz")
+
+```
+
+### Predict stream temperatures
+
+```{r, warning=F, message=F, eval=FALSE}
+sp.mod <- read_rds('../data/splm_selected.2024.08.08.rds')
+
+powell.pred <- predict(sp.mod, 
+                       newdata = powell.data,
+                       se.fit = TRUE,
+                       local = list(parallel = TRUE, 
+                                    ncores = 30))
+
+
+outdf <- 
+  powell.data %>% 
+  dplyr::select(COMID, year, month) %>% 
+  mutate(wt_pred = powell.pred$fit,
+         wt_se.fit = powell.pred$se.fit) %>% 
+  st_drop_geometry() 
+
+length(comids)
+
+test <- powell.data %>% 
+  pull(COMID) %>% 
+  na.omit() %>% unique()
+
+
+```
+
+### Write output file 
+
+```{r, warning=F, message=F, eval=FALSE}
+write_rds(outdf, 
+          file = '../data/powell-long-term-water-temperature-predictions.2024.08.08.rds',
+          compress = "xz")
+```

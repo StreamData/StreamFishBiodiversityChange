@@ -1,0 +1,559 @@
+---
+title: "Summer Model Assessment"
+format: 
+  html:
+    self-contained: true
+    code-fold: true
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+## Libraries & Setup
+
+* Documents function to conduct 10-fold cross validation of stream temperature data.
+* Leave-one-out cross validation is not adequate because of repeated measurements at stations.
+* This code withholds all sites with the same location ID (COMID) from the fold that contains the ID.
+* Doing so, prevents repeated measurements at the same site from being included in both training and testing data.
+
+```{r loading, warning=F, message=F, eval=T}
+library(sf)
+library(tidyverse)
+library(spmodel)
+library(data.table)
+library(ggplot2)
+library(caret)
+library(knitr)
+library(parallel)
+
+# Read in stream temperature data
+st <- 
+  readr::read_rds('../data/summer_data.2024.08.08.rds') %>% 
+  dplyr::mutate(month = as.character(month),
+                COMID = as.character(COMID)) %>% 
+  na.omit() %>% 
+  dplyr::ungroup() %>% 
+  dplyr::mutate(log10_dam = log10(NABD_NRMSTORWS + 1),
+                large_dam = ifelse(log10_dam > 5, 1, 0) %>% 
+                  as.character(),
+                no_dam = ifelse(log10_dam == 0, 1, 0) %>% 
+                  as.character())
+
+# Create list of unique COMIDs in from stream temperature data
+siteids <- 
+  st %>% 
+  dplyr::ungroup() %>% 
+  sf::st_drop_geometry() %>% 
+  dplyr::select(COMID) %>% 
+  dplyr::distinct() %>%  
+  dplyr::pull() 
+
+# Read in candidate models (formulas)
+lmer_formula <- read_rds('../data/base_lmer_formula.rds')
+aic_formula <- read_rds('../data/base_formula_stepaic.rds')
+fullset_formula <- read_rds('../data/fullset_formula.rds')
+
+# Function to calculate RMSE from observed and predicted values
+rmse <- function(observed, predicted){
+  sqrt(sum((predicted - observed)^2) / length(observed))
+}
+
+# Function to calculate median (or other quantile) absolute error
+quant_ae <- function(observed, predicted, quantile){
+  quantile(abs(observed - predicted), probs = quantile)
+}
+
+# Create folds or assessment of models
+set.seed(20240731)
+folds <-caret::createFolds(siteids)
+
+# Function to generate 10-fold cross validated assessments of candidate models
+foldcv <- function(x, siteids, st, formula, spcov, rando = ~ (1 | COMID)){
+  
+  library(dplyr); library(sf); library(spmodel)
+  
+  y <- siteids[x]
+  
+  # Generate training dataset from siteids
+  train <- 
+    st %>% 
+    dplyr::filter(!(COMID %in% y))
+  
+  # Generate test datset from siteids
+  test <- 
+    st %>% 
+    dplyr::filter(COMID %in% y)
+  
+  # Create spatial model
+  model <- spmodel::splm(formula, 
+                         data = train, 
+                         spcov_type = spcov, 
+                         random = rando,
+                         local = TRUE)
+  
+  # predict to test data
+  tmp <- predict(model, 
+                 newdata = test,
+                 local = TRUE)
+  
+  # Add predicted column to test data 
+  test <-
+    test %>% 
+    dplyr::mutate(predicted = tmp) %>% 
+    sf::st_drop_geometry() %>% 
+    dplyr::select(COMID, month, year, wtmp_mo, predicted)
+  return(test)
+}
+
+performance <- function(x){
+  rmse <- 
+    x %>% 
+    summarise(rmse = rmse(wtmp_mo, predicted))
+  mdae <- 
+    x %>% 
+    summarise(mdae = quant_ae(wtmp_mo, predicted, 0.5))
+  cor2 <- 
+    cor(x$wtmp_mo, x$predicted)^2
+  
+  out <- data.frame(rmse = rmse, mdae = mdae, cor2 = cor2)
+  return(out)
+}
+
+model_performance <- list()
+cl <- parallel::makeCluster(30)
+```
+
+## Model Assessment
+
+### Fullset model (no variable selection, non-spatial)
+
+```{r fullset_ns, warning=F, message=F, eval=T}
+formula <- fullset_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "none") %>% 
+  bind_rows()
+#parallel::stopCluster(cl)
+
+model_performance[[1]] <- performance(eval)
+```
+
+### Fullset model (no variable selection, spatial)
+
+```{r fullset_sp, warning=F, message=F, eval=T}
+formula <- fullset_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "exponential") %>% 
+  bind_rows()
+
+model_performance[[2]] <- performance(eval)
+```
+
+
+### lmerTest::step() model (non-spatial)
+
+```{r lmer_ns, warning=F, message=F, eval=T}
+formula <- lmer_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "none") %>% 
+  bind_rows()
+
+model_performance[[3]] <- performance(eval)
+```
+
+### lmerTest::step() model (spatial)
+
+```{r lmersp, warning=F, message=F, eval=T}
+formula <- lmer_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "exponential") %>% 
+  bind_rows()
+
+model_performance[[4]] <- performance(eval)
+```
+
+### MASS::stepAIC() model (non-spatial)
+
+```{r aic_ns, warning=F, message=F, eval=T}
+formula <- aic_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "none") %>% 
+  bind_rows()
+
+model_performance[[5]] <- performance(eval)
+```
+
+### MASS::stepAIC() model (spatial)
+
+```{r aic_sp, warning=F, message=F, eval=T}
+formula <- aic_formula
+
+eval <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "exponential") %>% 
+  bind_rows()
+
+model_performance[[6]] <- performance(eval)
+```
+
+### Random Forest Models
+
+* Includes standard random forest and random forest + spatial model of residuals
+
+```{r rf, warning=F, message=F, eval=T}
+formula <- 
+  wtmp_mo ~ 
+  tmeanPRISM+
+  month +
+  NABD_NRMSTORWS +
+  ELEVCAT + 
+  BFIWS + 
+  PCTCROPXXXXWS +
+  WTDEPWS + 
+  PCTFSTXXXXWSRP100 + 
+  PCTURBXXXXWS +
+  SANDWS +
+  WETINDEXWS +
+  nhdflow +
+  RUNOFFWS +
+  CAOWS +
+  BFIWS +
+  pptPRISM
+
+foldcv_rf <- function(x, siteids, st, formula){
+  
+  library(dplyr); library(sf); library(spmodel)
+  
+  y <- siteids[x]
+  
+  train <- 
+    st %>% 
+    dplyr::filter(!(COMID %in% y)) %>% 
+    dplyr::mutate(lon = sf::st_coordinates(.)[,1],
+                  lat = sf::st_coordinates(.)[,2]) %>% 
+    sf::st_drop_geometry()
+  test <- 
+    st %>% 
+    dplyr::filter(COMID %in% y) %>% 
+    dplyr::mutate(lon = sf::st_coordinates(.)[,1],
+                  lat = sf::st_coordinates(.)[,2]) %>% 
+    sf::st_drop_geometry()
+  model <- ranger::ranger(formula, 
+                          data=train)
+  
+  train$prediction <- model$predictions
+  train$resids <- train$wtmp_mo - train$prediction
+  train.splm <- splm(resids ~ 1, 
+                     data = train,
+                     spcov_type = "exponential", 
+                     xcoord = lon,
+                     ycoord = lat,
+                     local = TRUE)
+  
+  test$predicted_rf <- predict(model, data = test)$prediction
+  test$predicted_sprf <- test$predicted_rf + predict(train.splm, 
+                                                     newdata = test,
+                                                     local = TRUE)
+  
+  test <-
+    test %>% 
+    #sf::st_drop_geometry() %>% 
+    dplyr::select(COMID, month, year, wtmp_mo, predicted_rf, predicted_sprf)
+  return(test)
+}
+
+eval_rf <- 
+  parLapply(cl, 
+            folds, 
+            foldcv_rf,
+            siteids = siteids,
+            st = st,
+            formula = formula) %>% 
+  bind_rows()
+
+# Non-spatial
+rmserf <- eval_rf %>% 
+  #group_by(month) %>% 
+  summarise(rmse = rmse(wtmp_mo, predicted_rf))
+
+mdaerf <- eval_rf %>% 
+  #group_by(month) %>% 
+  summarise(mdae = quant_ae(wtmp_mo, predicted_rf, 0.5))
+
+cor2rf <- 
+  cor(eval_rf$wtmp_mo, eval_rf$predicted_rf)^2
+
+rfns <- data.frame(rmse = rmserf, mdae = mdaerf, cor2 = cor2rf)
+
+# Spatial
+rmserf <- eval_rf %>% 
+  #group_by(month) %>% 
+  summarise(rmse = rmse(wtmp_mo, predicted_sprf))
+
+mdaerf <- eval_rf %>% 
+  #group_by(month) %>% 
+  summarise(mdae = quant_ae(wtmp_mo, predicted_sprf, 0.5))
+
+cor2rf <- 
+  cor(eval_rf$wtmp_mo, eval_rf$predicted_sprf)^2
+
+sprf <- data.frame(rmse = rmserf, mdae = mdaerf, cor2 = cor2rf)
+```
+
+### Combined model assessments
+
+The models have almost identical performances, but the model selected with MASS::stepAIC() achieves this performance with far fewer parameters. We, therefore, selected this model as our final model.
+
+```{r combine, warning=F, message=F, eval=T}
+
+model_performance <- 
+  model_performance %>% 
+  bind_rows(rfns, sprf) 
+
+
+model <- c(
+  'fullset non-spatial',
+  'fullset spatial',
+  'lmerTest non-spatial',
+  'lmerTest spatial',
+  'stepAIC non-spatial',
+  'stepAIC spatial',
+  'random forest non-spatial',
+  'random forest spatial')
+
+model_performance <- 
+  tibble(model=model, model_performance) %>% 
+  arrange(rmse)
+
+kable(model_performance)
+```
+
+### Final model
+
+```{r final_model, warning=F, message=F, eval=T}
+formula <- aic_formula
+
+eval_final <- 
+  parLapply(cl, 
+            folds, 
+            foldcv,
+            siteids = siteids,
+            st = st,
+            formula = formula,
+            spcov = "exponential") %>% 
+  bind_rows()
+parallel::stopCluster(cl)
+
+final.rmse <- eval_final %>% 
+  summarise(rmse = rmse(wtmp_mo, predicted)) %>% 
+  pull(rmse)
+
+final.mdae <- eval_final %>% 
+  summarise(mdae = quant_ae(wtmp_mo, predicted, 0.5)) %>% 
+  pull(mdae)
+
+final.cor2 <- cor(eval_final$wtmp_mo, eval_final$predicted)^2
+
+final.cor2 <- c(
+  final.cor2,
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID, year)) %>% 
+    summarise(cor2 = cor(wtmp_mo, predicted)) %>% 
+    pull(cor2),
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID)) %>% 
+    summarise(cor2 = cor(wtmp_mo, predicted)) %>% 
+    pull(cor2)
+) 
+
+final.rmse <- c(
+  final.rmse,
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID, year)) %>% 
+    summarise(rmse = rmse(wtmp_mo, predicted)) %>% 
+    pull(rmse),
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID)) %>% 
+    summarise(rmse = rmse(wtmp_mo, predicted)) %>% 
+    pull(rmse)
+) 
+
+final.mdae <- c(
+  final.mdae,
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID, year)) %>% 
+    summarise(mdae = quant_ae(wtmp_mo, predicted, 0.5)) %>% 
+    pull(mdae),
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID)) %>% 
+    summarise(mdae = quant_ae(wtmp_mo, predicted, 0.5)) %>% 
+    pull(mdae)
+)
+
+n <- c(
+  nrow(eval_final),
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID, year)) %>% 
+    nrow(),
+  
+  eval_final %>% 
+    summarise(wtmp_mo = mean(wtmp_mo), 
+              predicted = mean(predicted),
+              .by = c(COMID)) %>%
+    nrow()
+)
+
+period <- c(
+  'YEAR-MONTH-COMID',
+  'YEAR-COMID',
+  'COMID'
+)
+
+definition <- c(
+  'Prediction of July or August temperatures within years at a COMID',
+  'Predictions of temperature within years (July/Aug averaged) at a COMID',
+  'Predictions of temperature at a COMID (July/Aug/years averaged)'
+)
+
+model_performance2 <- tibble(period, definition, n, final.rmse, final.mdae, final.cor2)
+
+final_splm <- spmodel::splm(formula, 
+                            data = st, 
+                            spcov_type = "exponential", 
+                            random = ~ (1 | COMID),
+                            local = list(size = 50, 
+                                         method = "kmeans", 
+                                         parallel = TRUE, 
+                                         ncores = 30, 
+                                         var_adjust = "none"))
+
+summary(final_splm)
+
+
+write_rds(final_splm, '../data/splm_selected.2024.08.08.rds')
+
+kable(model_performance2)
+```
+
+
+### Plot of observed vs. predicted
+
+
+```{r plot_models, warning=F, message=F, eval=T}
+ggplot(data = eval_final,
+       aes(x = predicted,
+           y = wtmp_mo)) +
+  geom_hex(bins = 100) + 
+  ggtitle("Final SPLM - YEAR-MONTH-COMID") +
+  xlim(3, 35) + ylim(3, 35) +
+  xlab('Predicted') + ylab('Observed') +
+  scale_fill_gradient(low = "grey", high = "darkblue") + 
+  geom_abline(color='black') + 
+  theme_bw()
+
+ggplot(data = eval_final %>% 
+         summarise(wtmp_mo = mean(wtmp_mo), 
+                   predicted = mean(predicted),
+                   .by = c(COMID, year)),
+       aes(x = predicted,
+           y = wtmp_mo)) +
+  geom_hex(bins = 100) + 
+  #ggtitle("Final Spatial Model") +
+  xlim(3, 35) + ylim(3, 35) +
+  xlab(expression("Predicted Summer Stream Temperature"~(degree*C))) + 
+  ylab(expression("Observed Summer Stream Temperature"~(degree*C))) +
+  #ylab('Observed Summer Stream Temperature') +
+  scale_fill_gradient(name = 'Count',
+                      low = "lightgrey", 
+                      high = "red") + 
+  geom_abline(color='black') + 
+  theme_bw()
+
+ggsave(file = '../figures/observed-predicted.png',
+       width = 5,
+       height = 4,
+       units = 'in',
+       dpi = 1000)
+
+ggsave(file = '../figures/observed-predicted.pdf',
+       width = 5,
+       height = 4,
+       units = 'in')
+
+ggplot(data = eval_final %>% 
+         summarise(wtmp_mo = mean(wtmp_mo), 
+                   predicted = mean(predicted),
+                   .by = c(COMID)),
+       aes(x = predicted,
+           y = wtmp_mo)) +
+  geom_hex(bins = 100) + 
+  ggtitle("Final SPLM - COMID") +
+  xlim(3, 35) + ylim(3, 35) +
+  xlab('Predicted') + ylab('Observed') +
+  scale_fill_gradient(low = "grey", high = "#33a02c") + 
+  geom_abline(color='black') + 
+  theme_bw()
+
+```
+
+
