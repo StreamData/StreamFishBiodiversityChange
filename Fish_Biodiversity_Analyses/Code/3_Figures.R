@@ -1328,7 +1328,7 @@ OPEGvNG = ggplot(OPE_g, aes(x  = x, y = predicted, color = LifeHistory))+
                      name = "Life history strategy")+
   theme_bw()+
   theme(axis.title.x = element_blank(),
-        legend.position = "none",
+        legend.position = "bottom",
         axis.text = element_text(color = "black",
                                  size = 7),
         axis.title = element_text(size = 9),
@@ -1377,7 +1377,12 @@ OPE_temp = ggplot(fishstats_tl, aes(y = temperature, x = Continuum))+
 
 ###make full figure ####
 
-bottom_row = plot_grid(OPENvNN, OPEGvNG,OPE_temp,
+legendA = get_plot_component(OPEGvNG + theme(legend.box.margin = margin(c(0,0,0,0))), 'guide-box-bottom', return_all = TRUE)
+
+
+bottom_row = plot_grid(OPENvNN, 
+                       OPEGvNG+ theme(legend.position = "none"),
+                       OPE_temp,
                        align = "h",
                        axis = "b",
                        nrow = 1,
@@ -1386,8 +1391,12 @@ bottom_row = plot_grid(OPENvNN, OPEGvNG,OPE_temp,
                        label_x = c(0,-.1,.05),
                        label_y = 1.025)
 
-ggsave("./figures/supfig_lifehistory.png", bottom_row,dpi = 800, 
-       height = 2, width = 6.5)
+fullsuppfig6 = plot_grid(bottom_row, legendA,
+          nrow = 2,
+          rel_heights = c(1,.1))
+
+ggsave("./figures/supfig_lifehistory.png", fullsuppfig6,dpi = 800, 
+       height = 2.5, width = 6.5)
 
 
 
