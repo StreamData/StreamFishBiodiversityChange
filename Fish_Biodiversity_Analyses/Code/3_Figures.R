@@ -103,31 +103,56 @@ Plot_Thermal <- tm_shape(HUC2)+
   #               labels = c("Cold", "Intermediate","Warm"),
   #               title = "Past temperature regime", 
   #               is.portrait = T)+
-  tm_scale_bar(position = c(0,0), 
-               text.size = .7, lwd = 1, width = .25)+
+  tm_scale_bar(position = c(0,0),
+               breaks = c(0,500,1000),
+               text.size = .5, lwd = 1, width = .25)+
   tm_layout(frame = FALSE, 
-            inner.margins = c(0.04,0.0,0.0,0),
+            inner.margins = c(0,0.0,0.0,0),
             asp = 1.6,
             bg.color = "transparent")
 
 ##make sure plot window is sized so that ratio is 1.1
 MAPHOLD = tmap_grob(Plot_Thermal)
 
+
+#add legend to bottom center of the figure
+##fake code just for a legend
+
+
+hld1 = ggplot(JulystreamTemps2, aes(x = wt_pred,
+                                    y = estimate,
+                                     fill = PastRegime))+
+  # facet_wrap(~CollectionYear, scales = "free_y")+
+geom_point(shape = 21, color = "grey43")+
+  scale_fill_manual(name = "Past temperature regime",
+                    values = c("blue","violet","red"))+
+  theme_bw()+
+  theme(legend.position = "bottom")
+
+legend.A = (get_plot_component(hld1 + theme(legend.margin = margin(-10,0,-10,0)), 'guide-box-bottom', return_all = TRUE))
+
+
 fullfig1 = plot_grid(plot_grid(NULL,hist12,NULL,
                                nrow = 3,
                                rel_heights = c(0.25,1,0.25),
                                labels = c("","A",""),
                                label_y = 1.1),
-                     # NULL,
+                     NULL,
                      MAPHOLD,
+                     NULL,
           nrow = 1,
-          labels = c("","B"),
-          rel_widths = c(.8,1),
-          label_x = 0,
+          labels = c("","","B",""),
+          rel_widths = c(.8,.05,1,.05),
+          label_x = -.05,
           label_y = .9)
 
-ggsave("./Figures/Figure1AB_new.jpg",fullfig1,
-       height = 3, width = 5, units = "in",
+fullfig1.1 = plot_grid(fullfig1,NULL,legend.A,
+                       ncol=1,
+                       nrow = 3,
+                       rel_heights = c(1,-.2,.2))
+
+ggsave("./Figures/Figure1AB_new.jpg",fullfig1.1,
+       height = 3.25, width = 5.25, units = "in",
        dpi = 600)
 
 
