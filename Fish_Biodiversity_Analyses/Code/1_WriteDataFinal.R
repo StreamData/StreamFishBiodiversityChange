@@ -920,4 +920,56 @@ fishdatOPE = fishdatCPUE %>%
 
 
 
+HUC2pres = cbind(fishdat %>%
+  group_by(HUC2) %>%
+  summarize(across(Luxilus.cornutus:Pteronotropis.metallicus, ~sum(.))),
+fishdatCPUE %>%
+  group_by(HUC2) %>%
+  summarize(Etheostoma.tetrazonum = sum(Etheostoma.tetrazonum),
+            Hypophthalmichthys.nobilis = sum(Hypophthalmichthys.nobilis)) %>%
+  ungroup() %>%
+  dplyr::select(-HUC2)) %>%
+  mutate(across(Luxilus.cornutus:Hypophthalmichthys.nobilis, ~ifelse(. > 0,
+                                                                     1, 0))) %>%
+  pivot_longer(cols = Luxilus.cornutus:Hypophthalmichthys.nobilis,
+               values_to = "Pres",
+               names_to = "Species")
+
+HUC2presNN = HUC2pres %>% left_join(nonnative %>%
+  mutate(HUC2 = substr(HUC8, 1,2)) %>%
+  group_by(Scientific.Name, HUC2) %>%
+  summarize(Native = paste(Native, collapse = '_')) %>%
+  mutate(Native = 'Non-native') %>%
+  ungroup() %>%
+  rename(Species = Scientific.Name)) %>%
+  mutate(Native = ifelse(is.na(Native) & Pres == 1,
+                         "Native",
+                         Native)) %>%
+  dplyr::select(-Pres) %>%
+  filter(!is.na(Native)) %>%
+  pivot_wider(names_from = HUC2,
+              values_from = Native,
+              names_prefix = "HUC",
+              values_fill = "")
+
+
+
+
+fishdesignations = OPE_subfin %>%
+  mutate(species = gsub(" ", ".", species)) %>%
+  left_join(gamey, by = join_by("species" == "Species")) %>%
+  rename(GameFish = Status,
+         Species = species) %>%
+  left_join(HUC2presNN) %>%
+  mutate(GameFish = ifelse(is.na(GameFish),
+                           "Non-game",
+                           "Game"),
+         Species = gsub("\\."," ", Species)) %>%
+  dplyr::select(Species, Equilibrium:Opportunist, GameFish, HUC01:HUC18)
+
+
+write.csv(fishdesignations, "./Data/fishdesignations.csv", row.names = F)
+
+
+
 
