@@ -154,7 +154,9 @@ fullfig1.1 = plot_grid(fullfig1,NULL,legend.A,
 ggsave("./Figures/Figure1AB_new.jpg",fullfig1.1,
        height = 3.25, width = 5.25, units = "in",
        dpi = 600)
-
+ggsave("./Figures/Figure1AB_new.eps",fullfig1.1,
+       height = 3.25, width = 5.25, units = "in",
+       dpi = 600)
 
 ##Figure 3 Past stream temp forest plot######
 #CPUE
@@ -162,44 +164,44 @@ test(emtrends(m1, ~wt_pred_new, var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0   -0.02325 0.00941 455.9  -2.471  0.0138
-# 20.5    0.00483 0.00502  42.6   0.962  0.3413
-# 25.6    0.02393 0.00717 183.1   3.336  0.0010
+# 13.0  -0.028292 0.00912 563.8  -3.102  0.0020
+# 20.5   0.000305 0.00462  44.8   0.066  0.9477
+# 25.6   0.019751 0.00686 227.8   2.879  0.0044
 
 test(emtrends(m1_native,  ~ wt_pred_new,
               var = "Year", at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0   -0.05500 0.01249 597.4  -4.404  <.0001
-# 20.5    0.00202 0.00624  47.3   0.324  0.7476
-# 25.6    0.04079 0.00939 255.4   4.343  <.0001
+# 13.0   -0.05935 0.01222 673.1  -4.856  <.0001
+# 20.5   -0.00345 0.00588  47.7  -0.587  0.5600
+# 25.6    0.03456 0.00914 298.2   3.783  0.0002
 
 test(emtrends(m1.sp,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 13.0   -0.02022 0.00918 Inf  -2.203  0.0276
-# 20.5    0.00249 0.00473 Inf   0.526  0.5988
-# 25.6    0.01793 0.00693 Inf   2.588  0.0097
+# 13.0   -0.02610 0.00887 Inf  -2.942  0.0033
+# 20.5   -0.00161 0.00433 Inf  -0.373  0.7092
+# 25.6    0.01504 0.00663 Inf   2.267  0.0234
 
 test(emtrends(m1_notnative,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
-# wt_pred_new Year.trend      SE  df t.ratio p.value
-# 13.0    0.00952 0.01039 347   0.916  0.3603
-# 20.5    0.01215 0.00584  39   2.082  0.0440
-# 25.6    0.01394 0.00775 125   1.799  0.0744
+# wt_pred_new Year.trend      SE    df t.ratio p.value
+# 13.0    0.00350 0.01146 500.2   0.305  0.7605
+# 20.5    0.00871 0.00591  44.7   1.475  0.1473
+# 25.6    0.01226 0.00841 199.9   1.457  0.1468
 
-CPUEtrends = data.frame(Year.trend = c(-0.02325,0.00483,0.02393,
-                                       -0.05500,0.00202,0.04079,
-                                       -0.02022,-0.00249,0.01793,
-                                       0.00952,0.01215,0.01394),
-                        SE = c(0.00941,0.00502,0.00717,
-                               0.01249,0.00624,0.00939,
-                               0.00918,0.00473,0.00693,
-                               0.01039,0.00584,0.00775),
+CPUEtrends = data.frame(Year.trend = c(-0.028292,0.000305,0.019751,
+                                       -0.05935,-0.00345,0.03456,
+                                       -0.02610,-0.00161,0.01504,
+                                       0.00350,0.00871,0.01226),
+                        SE = c(0.00912,0.00462,0.00686,
+                               0.01222,0.00588,0.00914,
+                               0.00887,0.00433,0.00663,
+                               0.01146,0.00591,0.00841),
                         Temperature = rep(c("Cold","Intermediate","Warm"), times = 4),
                         Type = rep(c("Whole community","Native, non-game","Spatial model","Non-native, game"), each = 3),
                         Endpoint = "Abundance")
@@ -212,17 +214,17 @@ test(emtrends(m_rare, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0   -0.01430 0.00288 880.5  -4.974  <.0001
-# 20.5   -0.00261 0.00121  42.5  -2.151  0.0372
-# 25.6    0.00534 0.00196 322.1   2.726  0.0068
+# 13.0   -0.01428 0.00288 866.6  -4.962  <.0001
+# 20.5   -0.00258 0.00123  42.7  -2.100  0.0417
+# 25.6    0.00538 0.00197 316.1   2.729  0.0067
 
 test(emtrends(m_rare_native, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE     df t.ratio p.value
-# 13.0   -0.00924 0.00383 1485.8  -2.414  0.0159
-# 20.5   -0.00305 0.00124   33.7  -2.452  0.0195
-# 25.6    0.00115 0.00220  358.4   0.524  0.6005
+# 13.0   -0.00920 0.00382 1483.7  -2.408  0.0162
+# 20.5   -0.00278 0.00125   33.3  -2.225  0.0329
+# 25.6    0.00159 0.00221  349.6   0.720  0.4723
 
 
 test(emtrends(m_rare.sp,  ~ wt_pred_new,
@@ -230,26 +232,26 @@ test(emtrends(m_rare.sp,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 13.0   -0.01369 0.00282 Inf  -4.862  <.0001
-# 20.5   -0.00277 0.00109 Inf  -2.542  0.0110
-# 25.6    0.00465 0.00189 Inf   2.460  0.0139
+# 13.0   -0.01367 0.00282 Inf  -4.851  <.0001
+# 20.5   -0.00270 0.00110 Inf  -2.457  0.0140
+# 25.6    0.00476 0.00190 Inf   2.499  0.0125
 
 test(emtrends(m_rare_notnative, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0   -0.01391 0.00376 653.3  -3.695  0.0002
-# 20.5   -0.00424 0.00181  45.8  -2.346  0.0234
-# 25.6    0.00234 0.00256 185.5   0.912  0.3628
+# 13.0   -0.01368 0.00377 637.2  -3.625  0.0003
+# 20.5   -0.00396 0.00183  46.3  -2.163  0.0357
+# 25.6    0.00264 0.00258 182.8   1.024  0.3071
 
-Richtrends = data.frame(Year.trend = c(-0.01430,-0.00261,0.00534,
-                                       -0.00924,-0.00305,0.00115,
-                                       -0.01369,-0.00277,0.00465,
-                                       -0.01391,-0.00424,0.00234),
-                        SE = c(0.00288,0.00121,0.00196,
-                               0.00383,0.00124,0.00220,
-                               0.00282,0.00109,0.00189,
-                               0.00376,0.00181,0.00256),
+Richtrends = data.frame(Year.trend = c(-0.01428,-0.00258,0.00538,
+                                       -0.00920,-0.00278,0.00159,
+                                       -0.01367,-0.00270,0.00476,
+                                       -0.01368,-0.00396,0.00264),
+                        SE = c(0.00288,0.00123,0.00197,
+                               0.00382,0.00125,0.00221,
+                               0.00282,0.00110,0.00190,
+                               0.00377,0.00183,0.00258),
                         Temperature = rep(c("Cold","Intermediate","Warm"), times = 4),
                         Type = rep(c("Whole community","Native, non-game","Spatial model","Non-native, game"), each = 3),
                         Endpoint = "Rarefied species richness")
@@ -262,45 +264,45 @@ test(emtrends(m1f,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0    0.00886 0.00800 871.2   1.107  0.2685
-# 20.5    0.00246 0.00349  40.8   0.705  0.4850
-# 25.6   -0.00189 0.00529 234.6  -0.357  0.7214
+# 13.0    0.01009 0.00802 863.9   1.258  0.2088
+# 20.5    0.00337 0.00352  41.7   0.956  0.3445
+# 25.6   -0.00120 0.00530 234.7  -0.227  0.8206
 
 test(emtrends(m1f_native,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
-# wt_pred_new Year.trend      SE     df t.ratio p.value
-# 13.0  -0.000292 0.00748 1006.8  -0.039  0.9689
-# 20.5  -0.002539 0.00296   34.8  -0.858  0.3966
-# 25.6  -0.004067 0.00484  300.2  -0.841  0.4010
+# wt_pred_new Year.trend      SE  df t.ratio p.value
+# 13.0   0.000707 0.00750 984   0.094  0.9250
+# 20.5  -0.001720 0.00301  36  -0.572  0.5712
+# 25.6  -0.003370 0.00486 296  -0.693  0.4887
 
 test(emtrends(m1f.sp,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 13.0    0.01460 0.00738 Inf   1.979  0.0478
-# 20.5    0.00191 0.00268 Inf   0.715  0.4744
-# 25.6   -0.00671 0.00490 Inf  -1.370  0.1706
+# 13.0    0.01556 0.00739 Inf   2.105  0.0353
+# 20.5    0.00266 0.00271 Inf   0.983  0.3255
+# 25.6   -0.00611 0.00491 Inf  -1.245  0.2132
 
 test(emtrends(m1f_notnative, ~wt_pred_new,
               var = "Year", 
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE    df t.ratio p.value
-# 13.0    0.01413 0.00815 935.2   1.735  0.0830
-# 20.5   -0.00119 0.00337  35.9  -0.353  0.7261
-# 25.6   -0.01161 0.00530 256.9  -2.189  0.0295
+# 13.0    0.01404 0.00817 923.5   1.719  0.0860
+# 20.5   -0.00125 0.00340  36.8  -0.369  0.7145
+# 25.6   -0.01166 0.00532 256.2  -2.192  0.0293
 
-fdistrends = data.frame(Year.trend = c(0.00886,0.00246,-0.00189,
-                                       -0.000292,-0.002539,-0.004067,
-                                       0.01460,0.00191,-0.00671,
-                                       0.01413,-0.00119, -0.01161),
-                        SE = c(0.00800,0.00349,0.00529,
-                               0.00748,0.00296,0.00484,
-                               0.00738,0.00268,0.00490,
-                               0.00815,0.00337,0.00530),
+fdistrends = data.frame(Year.trend = c(0.01009,0.00337,-0.00120,
+                                       -0.000707,-0.001720,-0.003370,
+                                       0.01556,0.00266,-0.00611,
+                                       0.01404,-0.00125, -0.01166),
+                        SE = c(0.00802,0.00352,0.00530,
+                               0.00750,0.00301,0.00486,
+                               0.00739,0.00271,0.00491,
+                               0.00817,0.00340,0.00532),
                         Temperature = rep(c("Cold","Intermediate","Warm"), times = 4),
                         Type = rep(c("Whole community","Native, non-game","Spatial model","Non-native, game"), each = 3),
                         Endpoint = "Functional diversity")
@@ -312,44 +314,44 @@ test(emtrends(mLCBD,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend       SE    df t.ratio p.value
-# 13.0   0.003020 0.000816 531.8   3.702  0.0002
-# 20.5  -0.000615 0.000408  43.9  -1.507  0.1389
-# 25.6  -0.003087 0.000587 201.6  -5.262  <.0001
+# 13.0   0.003123 0.000814 542.9   3.835  0.0001
+# 20.5  -0.000506 0.000407  45.3  -1.245  0.2195
+# 25.6  -0.002974 0.000585 212.7  -5.080  <.0001
 
 test(emtrends(mLCBD_native,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend       SE     df t.ratio p.value
-# 13.0   0.000480 0.001150 1005.6   0.417  0.6766
-# 20.5  -0.000524 0.000488   48.7  -1.075  0.2877
-# 25.6  -0.001207 0.000715  242.3  -1.688  0.0927
+# 13.0   0.000537 0.001151 1001.6   0.466  0.6410
+# 20.5  -0.000463 0.000491   49.7  -0.944  0.3499
+# 25.6  -0.001144 0.000718  244.5  -1.594  0.1123
 
 test(emtrends(mLCBD.sp,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
-# wt_pred_new Year.trend       SE  df z.ratio p.value
-# 13.0   0.002634 0.000759 Inf   3.471  0.0005
-# 20.5  -0.000292 0.000346 Inf  -0.843  0.3994
-# 25.6  -0.002282 0.000539 Inf  -4.231  <.0001
+# wt_pred_new Year.trend      SE  df z.ratio p.value
+# 13.0   0.002672 0.00149 Inf   1.791  0.0732
+# 20.5  -0.000294 0.00132 Inf  -0.222  0.8245
+# 25.6  -0.002310 0.00139 Inf  -1.668  0.0954
 
 test(emtrends(mLCBD_notnative, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend       SE    df t.ratio p.value
-# 13.0    0.00259 0.000944 672.5   2.742  0.0063
-# 20.5   -0.00116 0.000400  37.7  -2.904  0.0061
-# 25.6   -0.00371 0.000646 354.7  -5.741  <.0001
+# 13.0    0.00262 0.000945 652.0   2.773  0.0057
+# 20.5   -0.00113 0.000401  37.5  -2.814  0.0077
+# 25.6   -0.00368 0.000648 357.3  -5.683  <.0001
 
-LCBDtrends = data.frame(Year.trend = c(0.003020,-0.000615,-0.003087,
-                                       0.000480,-0.000524,-0.001207,
-                                       0.002634,-0.000292,-0.002282,
-                                       0.00259,-0.00116,-0.00371),
-                        SE = c(0.000816,0.000408,0.000587,
-                               0.001150,0.000488,0.000715,
-                               0.000759,0.000346,0.000539,
-                               0.000944,0.000400,0.000646
+LCBDtrends = data.frame(Year.trend = c(0.003123,-0.000506,-0.002974,
+                                       0.000537,-0.000463,-0.001144,
+                                       0.002672,-0.000294,-0.002310,
+                                       0.00262,-0.00113,-0.00368),
+                        SE = c(0.000814,0.000407,0.000585,
+                               0.001151,0.000491,0.000718,
+                               0.00149, 0.00132, 0.00139,
+                               0.000945,0.000401,0.000648
                                ),
                         Temperature = rep(c("Cold","Intermediate","Warm"), times = 4),
                         Type = rep(c("Whole community","Native, non-game","Spatial model","Non-native, game"), each = 3),
@@ -409,7 +411,7 @@ breaks_fun <- function(x) {
 
 limits_fun <- function(x) {
   if (max(abs(x)) < .01) {
-    c(-.005,.005)
+    c(-.006,.006)
   } else if(max(abs(x)) < .026) {
     c(-0.028,.028)
   }else if(max(abs(x)) < .05) {
@@ -491,7 +493,7 @@ ggplot(alltrends, aes(x = Year.trend.plot, y = Temperature, color = Temperature)
   guides(fill = guide_legend(override.aes=list(shape=21),
                              nrow = 1))+
   ylab("Past temperature regime")+
-  xlab("Temporal trend")+
+  xlab("Temporal trend per year")+
   theme_bw()+
   theme(axis.text.y = element_text(color = rev(c("red","violet","blue")),
                                    size = 11),
@@ -507,7 +509,19 @@ ggplot(alltrends, aes(x = Year.trend.plot, y = Temperature, color = Temperature)
 ggsave("./Figures/ForestPlotSupp.jpg", dpi = 900, width = 5, height = 5.5, units = "in")
 
 
-
+limits_fun <- function(x) {
+  if (max(abs(x)) < .01) {
+    c(-.005,.005)
+  } else if(max(abs(x)) < .026) {
+    c(-0.028,.028)
+  }else if(max(abs(x)) < .05) {
+    c(-0.033,0.033)
+  }   else if(max(abs(x)) > 10.5) {
+    c(9.15,10.85)
+  } else {
+    c(9.72,10.28)
+  }
+}
 f2=ggplot(alltrends %>% filter(!grepl("Spat",Model)), aes(x = Year.trend.plot, y = Temperature, color = Temperature))+
   facet_wrap(~Endpoint, scales = "free_x")+
   geom_segment(data = segworkaround, inherit.aes = F,
@@ -542,7 +556,7 @@ f2=ggplot(alltrends %>% filter(!grepl("Spat",Model)), aes(x = Year.trend.plot, y
   guides(fill = guide_legend(override.aes=list(shape=21),
                              nrow = 1))+
   ylab("Past temperature regime")+
-  xlab("Temporal trend")+
+  xlab("Temporal trend per year")+
   theme_bw()+
   theme(axis.text.y = element_text(color = rev(c("red","violet","blue")),
                                    size = 11),
@@ -557,6 +571,7 @@ f2=ggplot(alltrends %>% filter(!grepl("Spat",Model)), aes(x = Year.trend.plot, y
         axis.title = element_text(size = 12))
 
 ggsave("./Figures/ForestPlotMain_game.jpg",f2, dpi = 900, width = 5.24, height = 5.5, units = "in")
+ggsave("./Figures/ForestPlotMain_game.eps",f2, dpi = 900, width = 5.24, height = 5.5, units = "in")
 
 ##Figure 4 OPE ----
 ###trends ----
@@ -596,7 +611,7 @@ OPE_trends = ggplot(fOPEdat1, aes(x = x, y = predicted, group = group))+
   scale_fill_manual(values = rev(c("#d95f02","#59539c","#1b9e77")),
                     labels = rev(c("Opportunistic","Periodic","Equilibrium")),
                     name = "Life history strategy")+
-  ylab("Assemblage life history continuum")+
+  ylab("Abundance-weighted assemblage\nlife history continuum")+
   xlab("Year")+
   theme_bw()+
   theme(strip.background = element_rect(fill = "white"),
@@ -612,6 +627,8 @@ OPE_trends = ggplot(fOPEdat1, aes(x = x, y = predicted, group = group))+
 ggsave("./figures/fig3_lifehistory.png", OPE_trends,dpi = 800, 
        height = 2.5, width = 5)
 
+ggsave("./figures/fig3_lifehistory.eps", OPE_trends,dpi = 800, 
+       height = 2.5, width = 5)
 
 ##Figure 5 - climate change and introduced game impacts----
 
@@ -656,7 +673,7 @@ divcc_ig = ggplot(alldiv, aes(x = x*10, y = predicted*10))+
   scale_fill_manual(values = rev(c("#b4e33d","grey63","#fd3e81")),
                     labels = c(-0.2,0,0.2),
                     name = "Introduced, game abundance change per decade")+
-  ylab("Diversity change per decade")+
+  ylab("Local, non-game diversity change per decade")+
   xlab(expression(Temperature~change~(degree*C)~per~decade))+
   theme_bw()+
   guides(fill=guide_legend(title.position="top",
@@ -724,8 +741,362 @@ ggsave("./Figures/Figure5_CC.jpg",
        width = 4,
        units = "in")
 
+ggsave("./Figures/Figure5_CC.eps",
+       dpi = 600,
+       height = 5.5,
+       width = 4,
+       units = "in")
+
+
  #Supplemental figures----
 ##figure generation for raw richness and evennes trends is in 4_SupplementalAnalysis.R
+
+##FIgure S2----
+fishdatCPUE %>%
+  group_by(Year) %>%
+  summarize(maxTemp = max(wt_pred_new),
+            minTemp = min(wt_pred_new)) %>%
+  ungroup() %>%
+  summarize(maxTemp = median(maxTemp),
+            minTemp = median(minTemp))
+
+temps = ggplot(fishdatCPUE %>%
+                 mutate(PastRegime = ifelse(wt_pred_new < lowerbreak,
+                                            "Cold",
+                                            ifelse(wt_pred_new > upperbreak,
+                                                   "Warm",
+                                                   "Intermediate")),
+                        YearReal = as.character(Year + 1992)),
+               aes(x = YearReal, y = wt_pred_new))+
+  geom_rect(inherit.aes = F, ymin = 10.8, ymax = 28.5, xmin = -Inf, xmax = Inf, color = NA, fill = "grey90")+
+  # geom_violin()+
+  ggbeeswarm::geom_quasirandom(aes(color = PastRegime), bandwidth = 0.25, alpha = 0.4)+
+  geom_violin(fill = NA)+
+  ylab("Mean summer\ntemperature (1990-94)")+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  # scale_y_continuous(limits = c(0,90))+
+  scale_color_manual(name = "Past\ntemperature\nregime",
+                     values = c("blue","violet","red"))+
+  theme_bw()+
+  theme(legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+
+strord = ggplot(fishdatCPUE %>%
+                  mutate(StreamOrder = as.numeric(StreamOrder),
+                         YearReal = as.character(Year + 1992)) %>%
+                  group_by(YearReal, StreamOrder) %>%
+                  summarize(count = n()) %>%
+                  mutate(count = ifelse(count > 99,
+                                        100,
+                                        count)),
+                aes(x = YearReal, y = StreamOrder))+
+  geom_point(aes(size = count, fill = count), shape = 21)+
+  ylab("Stream order")+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  scale_y_continuous(breaks = c(2,4,6,8,10), limits = c(0.25,10))+
+  scale_fill_viridis_c(guide = "legend", breaks = c(2,5,25,50,75,100),
+                       name = "Sites",
+                       labels = c("2","5","25","50","75","100+"))+
+  scale_size_continuous(breaks = c(2,5,25,50,75,100), name = "Sites",
+                        labels = c("2","5","25","50","75","100+"))+
+  # scale_y_continuous(limits = c(0,90))+
+  theme_bw()+
+  theme(legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+
+landu = ggplot(fishdatCPUE %>%
+                 mutate(
+                   YearReal = as.character(Year + 1992)) %>%
+                 group_by(YearReal, Landuse) %>%
+                 summarize(count = n()) %>%
+                 mutate(count = ifelse(count > 99,
+                                       100,
+                                       count)),
+               aes(x = YearReal, y = Landuse))+
+  geom_point(aes(size = count, fill = count), shape = 21)+
+  ylab("Land use")+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  scale_fill_viridis_c(guide = "legend", breaks = c(2,5,25,50,75,100),
+                       name = "Sites",
+                       labels = c("2","5","25","50","75","100+"))+
+  scale_size_continuous(breaks = c(2,5,25,50,75,100), name = "Sites",
+                        labels = c("2","5","25","50","75","100+"))+
+  theme_bw()+
+  theme(legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+fishdatCPUE %>%
+  # filter(PredictedWettedWidth_m < 500) %>%
+  group_by(Year) %>%
+  summarize(maxTemp = max(PredictedWettedWidth_m),
+            minTemp = min(PredictedWettedWidth_m)) %>%
+  ungroup() %>%
+  summarize(maxTemp = median(maxTemp),
+            minTemp = median(minTemp))
+
+wetwid = ggplot(fishdatCPUE %>%
+                  mutate(YearReal = as.character(Year + 1992)),
+                aes(x = YearReal, y = PredictedWettedWidth_m))+
+  # geom_violin()+
+  geom_rect(inherit.aes = F, ymin = log(2.89), ymax = log(62.3), xmin = -Inf, xmax = Inf, color = NA, fill = "grey90")+
+  ggbeeswarm::geom_quasirandom(bandwidth = 0.25, alpha = 0.4)+
+  scale_y_continuous(trans = "log", breaks = c(1,5,10,50,100,500,1000))+
+  geom_violin(fill = NA)+
+  ylab("Predicted wetted\nwidth (m)")+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  # scale_y_continuous(limits = c(0,90))+
+  theme_bw()+
+  theme(legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+fishdatCPUE %>%
+  # filter(WholeConductivity < 10000) %>%
+  group_by(Year) %>%
+  summarize(maxTemp = max(WholeConductivity),
+            minTemp = min(WholeConductivity)) %>%
+  ungroup() %>%
+  summarize(maxTemp = median(maxTemp),
+            minTemp = median(minTemp))
+
+cond = ggplot(fishdatCPUE %>%
+                mutate(
+                  YearReal = as.character(Year + 1992)),
+              aes(x = YearReal, y = WholeConductivity))+
+  geom_rect(inherit.aes = F, ymin = log(16.5), ymax = log(1690), xmin = -Inf, xmax = Inf, color = NA, fill = "grey90")+
+  ggbeeswarm::geom_quasirandom(bandwidth = 0.25, alpha = .25)+
+  scale_y_continuous(trans = "log", breaks = c(1,10,100,1000,10000))+
+  geom_violin(fill = NA)+
+  ylab(expression(Conductivity~'('*mu*s~cm^'-1'*')'))+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  # scale_y_continuous(limits = c(0,90))+
+  theme_bw()+
+  theme(legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+yrs = fishdat %>%
+  group_by(SiteNumber) %>%
+  mutate(minYear = min(Year),
+         maxYear = max(Year),
+         nyear = maxYear - minYear + 1) %>%
+  ungroup() %>%
+  mutate(SiteNumber2 = fct_reorder(SiteNumber, minYear)) %>%
+  # group_by(SiteNumber)
+  mutate(ID = 1:n()) %>%
+  # pivot_longer(cols = minYear:maxYear,
+  #              names_to = "Type",
+  #              values_to = "Year") %>%
+  mutate(YearReal = as.character(Year + 1992)) %>%
+  ggplot(aes(x = YearReal, y = SiteNumber2), alpha = 0.5)+
+  geom_line(aes(group = SiteNumber, color = nyear), linewidth = 0.5)+
+  geom_point(shape = 21, fill = NA, alpha = 0.5)+
+  scale_color_viridis_c(name = "Years\nsampled")+
+  xlab("Sampling year")+
+  scale_x_discrete(breaks = seq(1993,2019,5))+
+  # scale_y_discrete(expand = c(0,0))+
+  theme_bw()+
+  # coord_flip()
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = "right",
+        legend.margin = margin(c(0,0,0,-5)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+strip_x = function(){
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.margin = margin(b = 0,t = 0))
+}
+
+
+cowplot::plot_grid(temps+strip_x(), wetwid+strip_x(),
+                   cond+strip_x(), strord+strip_x(),
+                   landu+theme(plot.margin = margin(t = 0)),
+                   # yrs+theme(plot.margin = margin(t = 0)),
+                   ncol = 1,
+                   align = "v",
+                   axis = "lr",
+                   rel_heights = c(.825,.825,.825,.825,1),
+                   labels = c(LETTERS[1:5]))
+
+ggsave("./Figures/FigS2.jpg", dpi = 600,
+       height = 6.6667,
+       width = 6,
+       units = "in",
+       scale = 1.5)
+
+#Figure S3----
+##Non-rarefied Species Richness####
+#use glmmTMB, because glmer.nb would not converge
+fishdat$SppRichness = rowSums(fishdat[,24:412])
+
+m_rawrich <- glmmTMB(SppRichness ~ Year*HUC2+Agency + StreamOrder + SampleTypeCode +
+                       log(PredictedWettedWidth_km) + poly(log(WholeConductivity),2,raw = TRUE) +
+                       Year*wt_pred_new+
+                       Landuse+Npass+
+                       (1|SiteNumber) + (1|YearC),
+                     data = fishdat,
+                     family = "poisson",
+                     control=glmmTMBControl(optimizer=optim,
+                                            optArgs=list(method="BFGS")))
+
+car::Anova(m_rawrich, type = 3)
+performance::r2(m_rawrich)
+
+
+frrdat <- data.frame(ggeffects::ggemmeans(m_rawrich, 
+                                          terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
+                                          weights = 'proportional'))
+frrdat$group = as.factor(frrdat$group )
+
+test(emtrends(m_rawrich, ~wt_pred_new, var = "Year",
+              at = list(wt_pred_new = c(13.0,20.5,25.6)),
+              weights = 'proportional'))
+# wt_pred_new Year.trend      SE  df z.ratio p.value
+# 13.0  -0.014030 0.00792 Inf  -1.772  0.0765
+# 20.5  -0.000675 0.00159 Inf  -0.424  0.6714
+# 25.6   0.008405 0.00466 Inf   1.804  0.0712
+
+rawrf1 = ggplot(frrdat, aes(x = x, y = predicted, group = group))+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
+  geom_line(aes(color = group),size = 1)+
+  scale_color_manual(values = rev(c("red","violet","blue")),
+                     labels = c("Cold","Intermediate","Warm"),
+                     name = "Past temperature regime")+
+  scale_fill_manual(values = rev(c("red","violet","blue")),
+                    labels = c("Cold","Intermediate","Warm"),
+                    name = "Past temperature regime")+
+  scale_y_continuous(limits = c(3.75,16),
+                     breaks = c(5,10,15))+
+  scale_x_continuous(breaks = c(1,10,20,27),
+                     labels = c(1993,2003,2013,2019))+
+  ylab("Non-rarefied species richness")+
+  xlab("Year")+
+  theme_bw()+
+  theme(
+    legend.position = "bottom",
+    legend.margin = margin(-5,10,-5,-10),
+    axis.text = element_text(color = "black",
+                             size = 9),
+    axis.title = element_text(size = 11))
+
+##Evenness####
+
+S_pie = diversity(fishdatCPUE[,24:405], index = "invsimpson")
+
+##sites with 0 species are given NA values
+fishdatCPUE$Spie = ifelse(is.infinite(S_pie),
+                          NA,
+                          S_pie)
+
+m_Spie <- lmer(log(Spie) ~ Year*HUC2+Agency +
+                 StreamOrder + SampleTypeCode +
+                 SANDCAT+
+                 log(PredictedWettedWidth_m) +
+                 poly(log(WholeConductivity),2,raw = TRUE) +
+                 Year*wt_pred_new +
+                 Landuse+ Npass+
+                 (1|SiteNumber) + (1|YearC),
+               data = fishdatCPUE)
+
+car::Anova(m_Spie, type = 3)
+
+performance::r2(m_Spie)
+
+##Significant interaction; but significant evenness differences
+##cold and intermediate streams significantly decreasing
+test(emtrends(m_Spie, ~wt_pred_new, var = "Year", rg.limit = 1000000, lmerTest.limit = 10,
+              pbkrtest.limit = 10,
+              at = list(wt_pred_new = c(13.0,20.5,25.6)),
+              weights = 'proportional'))
+# wt_pred_new Year.trend      SE  df z.ratio p.value
+# 13.0  -0.009297 0.00364 Inf  -2.556  0.0106
+# 20.5  -0.000696 0.00176 Inf  -0.395  0.6926
+# 25.6   0.005153 0.00262 Inf   1.964  0.0495
+
+
+fspiedat <- data.frame(ggeffects::ggemmeans(m_Spie,
+                                            terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
+                                            weights = 'proportional'))
+fspiedat$group = as.factor(fspiedat$group )
+
+p1 = ggplot(fspiedat, aes(x = x, y = predicted, group = group))+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
+  geom_line(aes(color = group),size = 1)+
+  scale_color_manual(values = rev(c("red","violet","blue")),
+                     labels = c("Cold","Intermediate","Warm"),
+                     name = "Past temperature regime")+
+  scale_fill_manual(values = rev(c("red","violet","blue")),
+                    labels = c("Cold","Intermediate","Warm"),
+                    name = "Past temperature regime")+
+  # scale_y_continuous(limits = c(1.5,6))+
+  scale_x_continuous(breaks = c(1,10,20,27),
+                     labels = c(1993,2003,2013,2019))+
+  ylab(expression(Evenness~(S[PIE])))+
+  xlab("Year")+
+  theme_bw()+
+  theme(
+    legend.position = "none",
+    legend.margin = margin(-5,10,-5,-10),
+    axis.text = element_text(color = "black",
+                             size = 9),
+    axis.title = element_text(size = 11))
+
+# legendrp = get_plot_component(rawrf1 + theme(legend.box.margin = margin(c(0,0,0,0))),
+#                               'guide-box-bottom', return_all = TRUE)
+# 
+# suppfig2 = plot_grid(plot_grid(rawrf1 + theme(legend.position = "none"), p1,
+#                                align = "hv",
+#                                nrow = 1,
+#                                axis = "l",
+#                                labels = c("A","B"),
+#                                label_x = .075),
+#                      legendrp,
+#                      ncol = 1,
+#                      rel_heights = c(1,.1))
+
+ggsave("./Figures/FigS2.jpg", suppfig2,dpi = 600, width = 5.75, height = 3, unit = "in")
+
+
 
 ##trendline figure ----
 ###Whole Community####
@@ -739,7 +1110,7 @@ fcdat$group = as.factor(fcdat$group )
 CPUE_fig = ggplot(fcdat, aes(x = x, y = predicted, group = group))+
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
   geom_line(aes(color = group),size = 1)+
-  scale_y_continuous(limits = c(0.05,3))+
+  scale_y_continuous(limits = c(0.05,3.1))+
   scale_x_continuous(breaks = c(1,10,20,27),
                      labels = c(1993,2003,2013,2019))+
   scale_color_manual(values = rev(c("red","violet","blue")),
@@ -757,8 +1128,8 @@ CPUE_fig = ggplot(fcdat, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2,t=2))
 
 #Rarerich
@@ -786,8 +1157,8 @@ rarerich_fig = ggplot(fr1dat, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2,t=2))
 
 #Functional Diversity
@@ -817,8 +1188,8 @@ ses_fig = ggplot(sesdat, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2,t=2))
 
 
@@ -849,9 +1220,74 @@ lcbd_fig = ggplot(lcbddat, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2,t=2))
+
+#raw rich
+
+frrdat <- data.frame(ggeffects::ggemmeans(m_rawrich, 
+                                          terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
+                                          weights = 'proportional'))
+frrdat$group = as.factor(frrdat$group )
+
+rawrf1 = ggplot(frrdat, aes(x = x, y = predicted, group = group))+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
+  geom_line(aes(color = group),size = 1)+
+  scale_color_manual(values = rev(c("red","violet","blue")),
+                     labels = c("Cold","Intermediate","Warm"),
+                     name = "Past temperature regime")+
+  scale_fill_manual(values = rev(c("red","violet","blue")),
+                    labels = c("Cold","Intermediate","Warm"),
+                    name = "Past temperature regime")+
+  scale_y_continuous(limits = c(3.75,16),
+                     breaks = c(5,10,15))+
+  scale_x_continuous(breaks = c(1,10,20,27),
+                     labels = c(1993,2003,2013,2019))+
+  ylab("Non-rarefied species richness")+
+  xlab("Year")+
+  theme_bw()+
+  theme(strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 10, color = "black"),
+        legend.position = "none",
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 9.5),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
+        plot.margin = margin(b = 2,t=2))
+
+#evenness
+fspiedat <- data.frame(ggeffects::ggemmeans(m_Spie,
+                                            terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
+                                            weights = 'proportional'))
+fspiedat$group = as.factor(fspiedat$group )
+
+p1 = ggplot(fspiedat, aes(x = x, y = predicted, group = group))+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
+  geom_line(aes(color = group),size = 1)+
+  scale_color_manual(values = rev(c("red","violet","blue")),
+                     labels = c("Cold","Intermediate","Warm"),
+                     name = "Past temperature regime")+
+  scale_fill_manual(values = rev(c("red","violet","blue")),
+                    labels = c("Cold","Intermediate","Warm"),
+                    name = "Past temperature regime")+
+  # scale_y_continuous(limits = c(1.5,6))+
+  scale_x_continuous(breaks = c(1,10,20,27),
+                     labels = c(1993,2003,2013,2019))+
+  ylab(expression(Evenness~(S[PIE])))+
+  xlab("Year")+
+  theme_bw()+
+  theme(strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 10, color = "black"),
+        legend.position = "none",
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 9.5),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
+        plot.margin = margin(b = 2,t=2))
+
 
 
 ###native, non-game####
@@ -864,7 +1300,7 @@ fr2dat_nat$group = as.factor(fr2dat_nat$group )
 CPUE_fig_nng = ggplot(fr2dat_nat, aes(x = x, y = predicted, group = group))+
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
   geom_line(aes(color = group),size = 1)+
-  scale_y_continuous(limits = c(0.05,3))+
+  scale_y_continuous(limits = c(0.05,3.1))+
   scale_x_continuous(breaks = c(1,10,20,27),
                      labels = c(1993,2003,2013,2019))+
   scale_color_manual(values = rev(c("red","violet","blue")),
@@ -882,8 +1318,8 @@ CPUE_fig_nng = ggplot(fr2dat_nat, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2))
 
 #rarefied richness
@@ -909,8 +1345,8 @@ rarerich_fig_nng = ggplot(fr1datnng, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2))
 
 #SES
@@ -940,8 +1376,8 @@ ses_fig_nng = ggplot(sesdat_nng, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.title.x = element_blank(),
         plot.margin = margin(b = 2))
 #LCBD
 
@@ -970,8 +1406,6 @@ lcbd_fig_nng = ggplot(lcbddatnng, aes(x = x, y = predicted, group = group))+
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        axis.text.x = element_blank(),
-        axis.title.x = element_blank(),
         plot.margin = margin(b = 2))
 
 
@@ -986,7 +1420,7 @@ fr2dat_notnat$group = as.factor(fr2dat_notnat$group )
 CPUE_fig_notnat = ggplot(fr2dat_notnat, aes(x = x, y = (predicted), group = group))+
   geom_ribbon(aes(ymin = (conf.low), ymax = (conf.high),fill = group),alpha = 0.25,color = NA)+
   geom_line(aes(color = group),size = 1)+
-  scale_y_continuous(limits = c(0.05,3))+
+  scale_y_continuous(limits = c(0.05,3.1))+
   scale_x_continuous(breaks = c(1,10,20,27),
                      labels = c(1993,2003,2013,2019))+
   scale_color_manual(values = rev(c("red","violet","blue")),
@@ -1004,7 +1438,7 @@ CPUE_fig_notnat = ggplot(fr2dat_notnat, aes(x = x, y = (predicted), group = grou
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        plot.margin = margin(b = 2))
+        plot.margin = margin(b = 2,r=5))
 
 #rarefied richness
 fr1dat_notnat <- data.frame(ggeffects::ggemmeans(m_rare_notnative, terms = c("Year[all]",
@@ -1030,7 +1464,7 @@ rarerich_fig_notnat = ggplot(fr1dat_notnat, aes(x = x, y = predicted, group = gr
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        plot.margin = margin(b = 2))
+        plot.margin = margin(b = 2, r = 5))
 
 #SES
 
@@ -1060,7 +1494,7 @@ ses_fig_notnat = ggplot(sesdat_notnat, aes(x = x, y = predicted, group = group))
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        plot.margin = margin(b = 2))
+        plot.margin = margin(b = 2, r = 5))
 #LCBD
 
 lcbddat_notnat <- data.frame(ggeffects::ggemmeans(mLCBD_notnative, terms = c("Year[all]",
@@ -1089,7 +1523,7 @@ lcbd_fig_notnat = ggplot(lcbddat_notnat, aes(x = x, y = predicted, group = group
         axis.text = element_text(color = "black",
                                  size = 8),
         axis.title = element_text(size = 9.5),
-        plot.margin = margin(b = 2))
+        plot.margin = margin(b = 2, r = 5))
 
 
 ###make final fig####
@@ -1099,26 +1533,81 @@ CPUE_fig2 <- CPUE_fig + theme(legend.position='none')
 # CPUE_fig2, rarerich_fig, ses_fig, lcbd_fig,
 # hist1,
 
-figunivar_nng <- plot_grid(CPUE_fig2, rarerich_fig, lcbd_fig, ses_fig,
-                           CPUE_fig_nng, rarerich_fig_nng,lcbd_fig_nng, ses_fig_nng,
-                           CPUE_fig_notnat, rarerich_fig_notnat,lcbd_fig_notnat, ses_fig_notnat,
-                           labels = c("A", "D", "G", "J",
-                                      "B", "E", "H", "K",
-                                      "C", "F", "I", "L"),
+##remake this figure:
+#3 columns: whole, native, non-native
+#6 rows: CPUE, Rarefich, LCBD, funcdiv (for all); raw rich and evenness for whole
+##native and non-native can all get rid of axis title and text for y (leave ticks)
+##funcdiv for native and non-native, evenness for whole should have x axes
+##  all others can get rid of x-axis text and titles
+##Lettering goes reading format (right then down)
+##ABC
+##DEF
+##GHI
+##JKL
+##M00
+##N00
+##legend
+
+theme_noxy = function(){
+  theme(
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+}
+theme_nox = function(){
+  theme(axis.title.x = element_blank()
+        )
+}
+
+figunivar_nng <- plot_grid(CPUE_fig2 + theme_nox(), CPUE_fig_nng + theme_noxy(), CPUE_fig_notnat+ theme_noxy(),
+                           rarerich_fig+ theme_nox(), rarerich_fig_nng+ theme_noxy(), rarerich_fig_notnat+ theme_noxy(),
+                           lcbd_fig+ theme_nox(), lcbd_fig_nng+ theme_noxy(), lcbd_fig_notnat+ theme_noxy(),
+                           ses_fig+ theme_nox(), ses_fig_nng+ theme_noxy(), ses_fig_notnat+ theme_noxy(),
+                           rawrf1+ theme_nox(), NULL, NULL,
+                           p1+ theme_nox(), NULL, NULL,
+                           labels = c(LETTERS[1:13],"","","N","",""),
                            label_size = 15,
-                           label_x = c(-.025,-.025,-.025,0,
-                                       -.025,-.025,-.025,0,
-                                       -.025,-.025,-.015,0),
-                           rel_heights = c(.825,.825,1),
-                           align = "v",
+                           label_x = c(-.025,-.025,-.015,
+                                       -.025,-.025,-.015,
+                                       -.025,-.025,-.015,
+                                       -.025,-.025,-.015,
+                                       .05,0,0,
+                                       -.025,0,0),
+                           label_y = c(1,1,1,
+                                       1,1,1,
+                                       1,1,1,
+                                       1,1,1,
+                                       1.05,1,1,
+                                       1,1,1),
+                           align = "hv",
                            axis = "lr",
-                           nrow = 3,
-                           ncol = 4)
+                           nrow = 6,
+                           ncol = 3)
+
+
 
 figunivar_nng_l = plot_grid(figunivar_nng, legend, ncol = 1, rel_heights = c(1, .1))
 
 ggsave("./figures/figUnivar_comparisons_YEARC_LUincluded.png", figunivar_nng_l, dpi = 900, 
-       height = 4.25, width = 6, scale = 1.5)
+       height = 8.5, width = 4.5, scale = 1.5)
+
+
+
+# figunivar_nng <- plot_grid(CPUE_fig2, rarerich_fig, lcbd_fig, ses_fig,
+#                            CPUE_fig_nng, rarerich_fig_nng,lcbd_fig_nng, ses_fig_nng,
+#                            CPUE_fig_notnat, rarerich_fig_notnat,lcbd_fig_notnat, ses_fig_notnat,
+#                            labels = c("A", "D", "G", "J",
+#                                       "B", "E", "H", "K",
+#                                       "C", "F", "I", "L"),
+#                            label_size = 15,
+#                            label_x = c(-.025,-.025,-.025,0,
+#                                        -.025,-.025,-.025,0,
+#                                        -.025,-.025,-.015,0),
+#                            rel_heights = c(.825,.825,1),
+#                            align = "v",
+#                            axis = "lr",
+#                            nrow = 3,
+#                            ncol = 4)
+
 
 
 
@@ -1145,7 +1634,7 @@ levels(fcdatLU$group)[2] = "Grassland/shrub"
 CPUE_figLU = ggplot(fcdatLU, aes(x = x, y = predicted, group = group))+
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
   geom_line(aes(color = group),size = 1)+
-  scale_y_continuous(limits = c(0.05,3))+
+  scale_y_continuous(limits = c(0.05,3.02))+
   scale_x_continuous(breaks = c(1,10,20,27),
                      labels = c(1993,2003,2013,2019))+
   scale_color_manual(values = (c("#1A9B75","#C93D80","#d85e02","#746DB7")))+
@@ -1432,7 +1921,8 @@ ggsave("./figures/supfig_lifehistory.png", fullsuppfig6,dpi = 800,
 ##
 wt_predrange = seq(round(min(fishdatCPUE$wt_pred_new),1), round(max(fishdatCPUE$wt_pred_new),1),by = 0.1)
 
-CPUEtrends = emtrends(m1, ~wt_pred_new, var = "Year",
+##CPUE needs to be based on landuse as well, since landuse interacts with time for this model
+CPUEtrends = emtrends(m1, ~wt_pred_new|Landuse, var = "Year",
          at = list(wt_pred_new = wt_predrange),lmer.df = "asymptotic",
          weights = "proportional"
          )
@@ -1451,7 +1941,7 @@ LCBDtrends = emtrends(mLCBD, ~wt_pred_new, var = "Year",
 
 trends = data.frame(CPUEtrends) %>%
   rename(CPUE.trend = Year.trend) %>%
-  dplyr::select(wt_pred_new,  CPUE.trend) %>%
+  dplyr::select(Landuse, wt_pred_new,  CPUE.trend) %>%
   left_join(data.frame(richnesstrends) %>%
               rename(richness.trend = Year.trend) %>%
               dplyr::select(wt_pred_new,  richness.trend)) %>%
@@ -1469,7 +1959,7 @@ temporaltrendwsite = fishdat %>%
   ungroup() %>%
   mutate(wt_pred_new = round(wt_pred_new, 1))  %>%
   mutate(wt_pred_new = as.character(wt_pred_new)) %>%
-  dplyr::select(Latitude_dd, Longitude_dd, wt_pred_new) %>%
+  dplyr::select(Latitude_dd, Longitude_dd, wt_pred_new, Landuse) %>%
   left_join(trends)
   
 temporaltrendwsite = temporaltrendwsite %>%
@@ -1593,6 +2083,31 @@ ggplot(fishdat %>%
         strip.text = element_text(size = 8, color = "black"))
 
 ggsave("./Figures/TempHistogramThruTime.jpg", dpi = 300,
+       width = 6,
+       height = 5.5,
+       units = "in")
+
+
+##temporal figure of stream order histogram ####
+
+
+ggplot(fishdat %>% mutate(StreamOrder = as.numeric(StreamOrder)),aes(x = StreamOrder))+
+  facet_wrap(~CollectionYear)+
+  geom_histogram(binwidth = 1, fill = "grey78", color = "black")+
+  xlab("Stream order")+
+  ylab("Number of sites")+
+  scale_y_continuous(limits = c(0,165))+
+  scale_x_continuous(breaks = 1:10)+
+  theme_bw()+
+  theme(legend.position = "bottom",
+        legend.margin = margin(c(-5,0,0,0)),
+        axis.text = element_text(color = "black",
+                                 size = 8),
+        axis.title = element_text(size = 12),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 8, color = "black"))
+
+ggsave("./Figures/StreamOrderHistorgrtmapamThruTime.jpg", dpi = 300,
        width = 6,
        height = 5.5,
        units = "in")

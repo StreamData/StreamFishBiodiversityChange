@@ -46,139 +46,6 @@ ggplot(ctmaxfigdat, aes(x = x, y = predicted, group = group))+
 
 ggsave("./Figures/Ctmax.jpg", dpi = 300, width = 4, height = 3.5, unit = "in")
 
-#Figure S3----
-##Non-rarefied Species Richness####
-#use glmmTMB, because glmer.nb would not converge
-fishdat$SppRichness = rowSums(fishdat[,24:412])
-
-m_rawrich <- glmmTMB(SppRichness ~ Year*HUC2+Agency + StreamOrder + SampleTypeCode +
-                   log(PredictedWettedWidth_km) + poly(log(WholeConductivity),2,raw = TRUE) +
-                   Year*wt_pred_new+
-                   Landuse+
-                   (1|SiteNumber) + (1|YearC),
-                 data = fishdat,
-                 family = "poisson",
-                 control=glmmTMBControl(optimizer=optim,
-                                        optArgs=list(method="BFGS")))
-
-car::Anova(m_rawrich, type = 3)
-performance::r2(m_rawrich)
-
-
-frrdat <- data.frame(ggeffects::ggemmeans(m_rawrich, 
-                                          terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
-                                          weights = 'proportional'))
-frrdat$group = as.factor(frrdat$group )
-
-test(emtrends(m_rawrich, ~wt_pred_new, var = "Year",
-              at = list(wt_pred_new = c(13.0,20.5,25.6)),
-              weights = 'proportional'))
-# wt_pred_new Year.trend      SE  df z.ratio p.value
-# 13.0  -1.32e-02 0.00610 Inf  -2.158  0.0309
-# 20.5   1.59e-05 0.00155 Inf   0.010  0.9918
-# 25.6   8.98e-03 0.00369 Inf   2.431  0.0151
-
-rawrf1 = ggplot(frrdat, aes(x = x, y = predicted, group = group))+
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
-  geom_line(aes(color = group),size = 1)+
-  scale_color_manual(values = rev(c("red","violet","blue")),
-                     labels = c("Cold","Intermediate","Warm"),
-                     name = "Past temperature regime")+
-  scale_fill_manual(values = rev(c("red","violet","blue")),
-                    labels = c("Cold","Intermediate","Warm"),
-                    name = "Past temperature regime")+
-  scale_y_continuous(limits = c(3.75,16),
-                     breaks = c(5,10,15))+
-  scale_x_continuous(breaks = c(1,10,20,27),
-                     labels = c(1993,2003,2013,2019))+
-  ylab("Non-rarefied species richness")+
-  xlab("Year")+
-  theme_bw()+
-  theme(
-        legend.position = "bottom",
-        legend.margin = margin(-5,10,-5,-10),
-        axis.text = element_text(color = "black",
-                                 size = 9),
-        axis.title = element_text(size = 11))
-
-##Evenness####
-
-S_pie = diversity(fishdatCPUE[,24:405], index = "invsimpson")
-
-##sites with 0 species are given NA values
-fishdatCPUE$Spie = ifelse(is.infinite(S_pie),
-                           NA,
-                           S_pie)
-
-m_Spie <- lmer(log(Spie) ~ Year*HUC2+Agency +
-                       StreamOrder + SampleTypeCode +
-                       SANDCAT+
-                       log(PredictedWettedWidth_m) +
-                       poly(log(WholeConductivity),2,raw = TRUE) +
-                       Year*wt_pred_new +
-                       Landuse+
-                       (1|SiteNumber) + (1|YearC),
-                     data = fishdatCPUE)
-
-car::Anova(m_Spie, type = 3)
-
-performance::r2(m_Spie)
-
-##Significant interaction; but significant evenness differences
-##cold and intermediate streams significantly decreasing
-test(emtrends(m_Spie, ~wt_pred_new, var = "Year", rg.limit = 1000000, lmerTest.limit = 10,
-              pbkrtest.limit = 10,
-              at = list(wt_pred_new = c(13.0,20.5,25.6)),
-              weights = 'proportional'))
-# wt_pred_new Year.trend      SE  df z.ratio p.value
-# 13.0  -0.009116 0.00364 Inf  -2.504  0.0123
-# 20.5  -0.000489 0.00176 Inf  -0.277  0.7814
-# 25.6   0.005378 0.00262 Inf   2.051  0.0402
-
-
-fspiedat <- data.frame(ggeffects::ggemmeans(m_Spie,
-                                            terms = c("Year[all]","wt_pred_new[13.0,20.5,25.6]"),
-                                            weights = 'proportional'))
-fspiedat$group = as.factor(fspiedat$group )
-
-p1 = ggplot(fspiedat, aes(x = x, y = predicted, group = group))+
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high,fill = group),alpha = 0.25,color = NA)+
-  geom_line(aes(color = group),size = 1)+
-  scale_color_manual(values = rev(c("red","violet","blue")),
-                     labels = c("Cold","Intermediate","Warm"),
-                     name = "Past temperature regime")+
-  scale_fill_manual(values = rev(c("red","violet","blue")),
-                    labels = c("Cold","Intermediate","Warm"),
-                    name = "Past temperature regime")+
-  # scale_y_continuous(limits = c(1.5,6))+
-  scale_x_continuous(breaks = c(1,10,20,27),
-                     labels = c(1993,2003,2013,2019))+
-  ylab(expression(Evenness~(S[PIE])))+
-  xlab("Year")+
-  theme_bw()+
-  theme(
-    legend.position = "none",
-    legend.margin = margin(-5,10,-5,-10),
-    axis.text = element_text(color = "black",
-                             size = 9),
-    axis.title = element_text(size = 11))
-
-legendrp = get_plot_component(rawrf1 + theme(legend.box.margin = margin(c(0,0,0,0))),
-                              'guide-box-bottom', return_all = TRUE)
-
-suppfig2 = plot_grid(plot_grid(rawrf1 + theme(legend.position = "none"), p1,
-                    align = "hv",
-                    nrow = 1,
-                    axis = "l",
-                    labels = c("A","B"),
-                    label_x = .075),
-          legendrp,
-          ncol = 1,
-          rel_heights = c(1,.1))
-
-ggsave("./Figures/FigS2.jpg", suppfig2,dpi = 600, width = 5.75, height = 3, unit = "in")
-
-
 
 #Spatial analyses####
 #Note: version of spmodel used here is the devbranch version, as of 8/15/24 the
@@ -192,7 +59,7 @@ m1.sp <- splm(log(TotalCPUE100m + 0.01) ~ Year*HUC2 + Agency +
                 log(PredictedWettedWidth_m) +
                 poly(log(WholeConductivity), 2, raw = TRUE) +
                 Year*wt_pred_new +
-                Year*Landuse,
+                Year*Landuse+Npass,
               data = fishdatCPUE,
               random = ~ SiteNumber + YearC,
               spcov_type = "exponential",
@@ -204,15 +71,15 @@ test(emtrends(m1.sp,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 12.9   -0.01948 0.00997 Inf  -1.954  0.0507
-# 19.8    0.00294 0.00567 Inf   0.519  0.6035
-# 24.9    0.01952 0.00669 Inf   2.919  0.0035
+# 13.0   -0.02610 0.00887 Inf  -2.942  0.0033
+# 20.5   -0.00161 0.00433 Inf  -0.373  0.7092
+# 25.6    0.01504 0.00663 Inf   2.267  0.0234
 
 m_rare.sp <- splm(log(RarefiedRichness) ~  Year*HUC2+Agency +
                     StreamOrder + SampleTypeCode +
                     log(PredictedWettedWidth_m) +
                     poly(log(WholeConductivity),2,raw = TRUE) +
-                    Year*wt_pred_new+Landuse,
+                    Year*wt_pred_new+Landuse+Npass,
                   data = fishdat_rarefiedRich,
                   random = ~ SiteNumber + YearC,
                   spcov_type = "exponential",
@@ -228,9 +95,9 @@ test(emtrends(m_rare.sp,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 12.9  -0.016525 0.00296 Inf  -5.579  <.0001
-# 19.8  -0.006525 0.00159 Inf  -4.101  <.0001
-# 24.9   0.000867 0.00207 Inf   0.419  0.6752
+# 13.0   -0.01367 0.00282 Inf  -4.851  <.0001
+# 20.5   -0.00270 0.00110 Inf  -2.457  0.0140
+# 25.6    0.00476 0.00190 Inf   2.499  0.0125
 
 
 m1f.sp <- splm(SES ~  Year*HUC2 + Agency + StreamOrder + SampleTypeCode +
@@ -238,7 +105,7 @@ m1f.sp <- splm(SES ~  Year*HUC2 + Agency + StreamOrder + SampleTypeCode +
                  log(PredictedWettedWidth_km)+
                  poly(log(WholeConductivity), 2, raw = TRUE)+
                  wt_pred_new*Year+
-                 Landuse,
+                 Landuse + Npass,
                data = fishdat,
                random = ~ SiteNumber + YearC,
                spcov_type = "exponential",
@@ -250,16 +117,16 @@ test(emtrends(m1f.sp,  ~ wt_pred_new,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
 # wt_pred_new Year.trend      SE  df z.ratio p.value
-# 12.9    0.01524 0.00758 Inf   2.011  0.0444
-# 19.8    0.00197 0.00374 Inf   0.527  0.5983
-# 24.9   -0.00784 0.00509 Inf  -1.540  0.1235
+# 13.0    0.01556 0.00739 Inf   2.105  0.0353
+# 20.5    0.00266 0.00271 Inf   0.983  0.3255
+# 25.6   -0.00611 0.00491 Inf  -1.245  0.2132
 
 mLCBD.sp <- splm(LCBD_s2 ~  Year*HUC2 + Agency + StreamOrder + SampleTypeCode +
                    SANDCAT+
                    log(PredictedWettedWidth_km)+
                    poly(log(WholeConductivity), 2, raw = TRUE)+
                    wt_pred_new*Year+
-                   Landuse,
+                   Landuse + Npass,
                  data = fishdat_LCBD,
                  random = ~ SiteNumber + YearC,
                  spcov_type = "exponential",
@@ -270,10 +137,10 @@ test(emtrends(mLCBD.sp,  ~ wt_pred_new,
               var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
               weights = "proportional"))
-# wt_pred_new Year.trend       SE  df z.ratio p.value
-# 12.9   2.30e-03 0.000817 Inf   2.812  0.0049
-# 19.8   4.18e-05 0.000458 Inf   0.091  0.9273
-# 24.9  -1.63e-03 0.000583 Inf  -2.790  0.0053
+# wt_pred_new Year.trend      SE  df z.ratio p.value
+# 13.0   0.002672 0.00149 Inf   1.791  0.0732
+# 20.5  -0.000294 0.00132 Inf  -0.222  0.8245
+# 25.6  -0.002310 0.00139 Inf  -1.668  0.0954
 
 
 #life history supplemental analyses----
@@ -558,11 +425,12 @@ streamTemps <- streamTemps %>%
   summarize(wt_pred = mean(wt_pred)) %>%
   ungroup() 
 
+#select 1993-1997 (5 years)
 FD2 = streamTemps %>%
   mutate(YearG = ifelse(year < 1998 & year > 1992,
                         # year == 1990,
                         "Early",
-                        ifelse(year > 2014,
+                        ifelse(year > 2014 & year < 2020,
                                # year == 2020,
                                "Late",
                                "Drop"

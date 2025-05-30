@@ -818,7 +818,10 @@ OPE_subfin = bind_rows(OPE_sub,
                          dplyr::select(-genus))
 
 
-
+OPE_subfin %>%
+  filter(grepl("piceus", species))
+  filter(species %in% c("Ctenopharyngodon idella",
+                        "Mylopharyngodon piceus"))
 
 ###
 #prop non-native/game
@@ -972,4 +975,87 @@ write.csv(fishdesignations, "./Data/fishdesignations.csv", row.names = F)
 
 
 
+###
+whol_passes = read.csv("./Data/whol_passes.csv")
 
+fishdatCPUE = fishdatCPUE %>%
+left_join(whol_passes)
+
+
+fishdatCPUE = fishdatCPUE %>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+
+fishdat_rarefiedRich = fishdat_rarefiedRich %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat = fishdat %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_LCBD = fishdat_LCBD %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdatOPE = fishdatOPE %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdatCPUE_native = fishdatCPUE_native %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_rarefiedRich_nng = fishdat_rarefiedRich_nng %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_native = fishdat_native %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_native_LCBD = fishdat_native_LCBD %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdatCPUE_notnative = fishdatCPUE_notnative %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_rarefiedRich_notnative = fishdat_rarefiedRich_notnative %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_notnativeSES = fishdat_notnativeSES %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
+
+fishdat_notnative_LCBD = fishdat_notnative_LCBD %>%
+  left_join(whol_passes)%>%
+  mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
+                        1,
+                        Npass))
