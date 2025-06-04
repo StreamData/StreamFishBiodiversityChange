@@ -28,7 +28,7 @@ library(parallel)
 
 # Read in stream temperature data
 st <- 
-  readr::read_rds('../data/summer_data.2024.08.08.rds') %>% 
+  readr::read_rds('./data/summer_data.2024.08.08.rds') %>% 
   dplyr::mutate(month = as.character(month),
                 COMID = as.character(COMID)) %>% 
   na.omit() %>% 
@@ -49,9 +49,9 @@ siteids <-
   dplyr::pull() 
 
 # Read in candidate models (formulas)
-lmer_formula <- read_rds('../data/base_lmer_formula.rds')
-aic_formula <- read_rds('../data/base_formula_stepaic.rds')
-fullset_formula <- read_rds('../data/fullset_formula.rds')
+lmer_formula <- read_rds('./data/base_formula_lmer.rds')
+aic_formula <- read_rds('~./data/base_formula_stepaic.rds')
+fullset_formula <- read_rds('~./data/fullset_formula.rds')
 
 # Function to calculate RMSE from observed and predicted values
 rmse <- function(observed, predicted){
@@ -308,6 +308,9 @@ eval_rf <-
             siteids = siteids,
             st = st,
             formula = formula) %>% 
+  bind_rows()
+
+eval_rf = eval_rf %>%
   bind_rows()
 
 # Non-spatial

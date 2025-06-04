@@ -77,7 +77,7 @@ states <- tigris::states(cb = TRUE, progress_bar = FALSE)  %>%
   filter(!STUSPS %in% c('HI', 'PR', 'AK', 'MP', 'GU', 'AS', 'VI'))  %>% 
   st_transform(crs = 5070)
 
-ggplot() +
+maptemps = ggplot() +
   geom_sf(data = states,
           fill = 'white') +
   geom_sf(data = st %>% 
