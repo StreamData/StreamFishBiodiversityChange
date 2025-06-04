@@ -63,8 +63,8 @@ m1 <- lmer(log(TotalCPUE100m + 0.01) ~
 Anova(m1, type = 3, test = "F")
 
 performance::r2(m1)
-#  Conditional R2: 0.741
-#  Marginal R2: 0.450
+#  Conditional R2: 0.751
+#  Marginal R2: 0.463
 
 test(emtrends(m1, ~wt_pred_new, var = "Year",
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
@@ -100,7 +100,7 @@ car::Anova(m_rare, type = 3, test = "F")
 
 performance::r2(m_rare)
 # Conditional R2: 0.879
-# Marginal R2: 0.534
+# Marginal R2: 0.532
 
 test(emtrends(m_rare, ~wt_pred_new, var = "Year", 
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
@@ -133,7 +133,7 @@ m1f <- blmer(SES ~ Year*HUC2 + Agency + StreamOrder  + SampleTypeCode +
 
 performance::r2(m1f)
 # Conditional R2: 0.541
-# Marginal R2: 0.126
+# Marginal R2: 0.122
 
 Anova(m1f, type = 3, test = "F")
 
@@ -169,8 +169,8 @@ mLCBD <- lmer(LCBD_s2 ~ Year*HUC2+Agency + StreamOrder  + SampleTypeCode +
 Anova(mLCBD, type = 3, test = "F")
 
 performance::r2(mLCBD)
-# Conditional R2: 0.777
-# Marginal R2: 0.087
+# Conditional R2: 0.773
+# Marginal R2: 0.136
 
 test(emtrends(mLCBD,  ~ wt_pred_new,
               var = "Year",
@@ -205,6 +205,8 @@ m1_native <- lmer(log(TotalCPUE100m + 0.01) ~ Year*HUC2+Agency + StreamOrder  +
 Anova(m1_native, type = 3, test = "F")
 
 performance::r2(m1_native)
+#.813
+#.399
 
 test(emtrends(m1_native,  ~ wt_pred_new,
               var = "Year",
@@ -227,6 +229,8 @@ m_rare_native<- lmer(log(RarefiedRichness) ~ Year*HUC2+Agency +
 car::Anova(m_rare_native, type = 3, test = "F")
 
 performance::r2(m_rare_native)
+#.862
+#.445
 
 test(emtrends(m_rare_native, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
@@ -246,6 +250,9 @@ m1f_native <- blmer(SES ~ Year*HUC2 + Agency + StreamOrder  + SampleTypeCode +
 
 summary(m1f_native)
 performance::r2(m1f_native)
+#.631
+#.071
+
 Anova(m1f_native, type = 3, test = "F")
 
 test(emtrends(m1f_native,  ~ wt_pred_new,
@@ -266,6 +273,8 @@ mLCBD_native <- lmer(LCBD2_s2 ~ Year*HUC2+Agency + StreamOrder  + SampleTypeCode
                      control = lmerControl(optimizer = "nlminbwrap"))
 
 performance::r2(mLCBD_native)
+#.754
+#.083
 
 Anova(mLCBD_native, type = 3, test = "F")
 
@@ -292,6 +301,8 @@ m1_notnative <- lmer(log(TotalCPUE100m + 0.01) ~ Year*HUC2+Agency + StreamOrder 
 Anova(m1_notnative, type = 3, test = "F")
 
 performance::r2(m1_notnative)
+#.755
+#.325
 
 test(emtrends(m1_notnative,  ~ wt_pred_new,
               var = "Year",
@@ -314,6 +325,8 @@ m_rare_notnative<- lmer(log(RarefiedRichness) ~ Year*HUC2+Agency +
 Anova(m_rare_notnative, type = 3, test = "F")
 
 performance::r2(m_rare_notnative)
+#.815
+#.501
 
 test(emtrends(m_rare_notnative, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),
@@ -333,6 +346,9 @@ m1f_notnative<- blmer(SES ~ Year*HUC2 + Agency + StreamOrder  + SampleTypeCode +
 
 summary(m1f_notnative)
 performance::r2(m1f_notnative)
+#.516
+#.090
+
 Anova(m1f_notnative,type = 3, test = "F")
 
 test(emtrends(m1f_notnative,  ~ wt_pred_new,
@@ -355,6 +371,8 @@ mLCBD_notnative <- lmer(LCBD2_s2 ~ Year*HUC2+Agency + StreamOrder  + SampleTypeC
 Anova(mLCBD_notnative, type = 3, test = "F")
 
 performance::r2(mLCBD_notnative)
+#.685
+#.088
 
 test(emtrends(mLCBD_notnative, ~wt_pred_new, var = "Year", pbkrtest.limit = 60000,
               at = list(wt_pred_new = c(13.0,20.5,25.6)),

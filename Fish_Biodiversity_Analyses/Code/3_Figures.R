@@ -94,25 +94,31 @@ Plot_Thermal <- tm_shape(HUC2)+
   tm_borders()+
   tm_shape(US_Bounds)+
   tm_borders()+
-  tm_shape(pts)+
-  tm_dots(col = "Temp_Class", 
-          palette = c("blue", "violet", "red"),
-          size = 0.125, shape = 21, legend.show = F) +
+  tm_shape(pts,
+           col.legend =  tm_legend_hide(),
+           fill.legend = tm_legend_hide())+
+  tm_dots(fill = "Temp_Class", 
+          # palette = c("blue", "violet", "red"),
+          size = 0.375, shape = 21,
+          # col.legend =  tm_legend_hide(),
+          fill.legend = tm_legend_hide(),
+          fill.scale = tm_scale(values = c("blue", "violet", "red"))) +
   # tm_add_legend(type = "symbol", size=0.5,
   #               shape = 21, col = c("blue", "violet", "red"),
   #               labels = c("Cold", "Intermediate","Warm"),
   #               title = "Past temperature regime", 
   #               is.portrait = T)+
-  tm_scale_bar(position = c(0,0),
-               breaks = c(0,500,1000),
-               text.size = .5, lwd = 1, width = .25)+
+  tm_scalebar(position = tm_pos_in(.375,.375),
+              # breaks = c(0,500,1000),
+               text.size = .5, lwd = 1,
+              width = 3)+
   tm_layout(frame = FALSE, 
             inner.margins = c(0,0.0,0.0,0),
             asp = 1.6,
             bg.color = "transparent")
 
 ##make sure plot window is sized so that ratio is 1.1
-MAPHOLD = tmap_grob(Plot_Thermal)
+MAPHOLD = tmap_grob(Plot_Thermal, scale = 1, asp = 1.1)
 
 
 #add legend to bottom center of the figure
@@ -135,13 +141,13 @@ legend.A = (get_plot_component(hld1 + theme(legend.margin = margin(-10,0,-10,0))
 fullfig1 = plot_grid(plot_grid(NULL,hist12,NULL,
                                nrow = 3,
                                rel_heights = c(0.25,1,0.25),
-                               labels = c("","A",""),
+                               labels = c("","a",""),
                                label_y = 1.1),
                      NULL,
                      MAPHOLD,
                      NULL,
           nrow = 1,
-          labels = c("","","B",""),
+          labels = c("","","b",""),
           rel_widths = c(.8,.05,1,.05),
           label_x = -.05,
           label_y = .9)
@@ -151,10 +157,10 @@ fullfig1.1 = plot_grid(fullfig1,NULL,legend.A,
                        nrow = 3,
                        rel_heights = c(1,-.2,.2))
 
-ggsave("./Figures/Figure1AB_new.jpg",fullfig1.1,
+ggsave("./Figures/Figure1AB_new.jpg", fullfig1.1,
        height = 3.25, width = 5.25, units = "in",
        dpi = 600)
-ggsave("./Figures/Figure1AB_new.eps",fullfig1.1,
+ggsave("./Figures/Figure1AB_new.eps", fullfig1.1,
        height = 3.25, width = 5.25, units = "in",
        dpi = 600)
 
@@ -727,13 +733,13 @@ changeplot = ggplot(JulystreamTemps2 %>% filter(estimate*10 > -.5), aes(x = esti
 plot_grid(plot_grid(NULL, changeplot, NULL,
                     nrow = 1,
                     rel_widths = c(0.3, 1, 0.3),
-                    labels = c("","A",""),
+                    labels = c("","a",""),
                     label_x = -.1),
           # NULL,
           divcc_ig,
           nrow = 2,
           rel_heights = c(.45,1),
-          labels = c("","B"))
+          labels = c("","b"))
 
 ggsave("./Figures/Figure5_CC.jpg",
        dpi = 600,
@@ -2052,62 +2058,4 @@ endpoint_maps2 = plot_grid(endpoint_maps,
 ggsave("./Figures/EndpointMap.jpg", endpoint_maps2,dpi = 900,
        height = 4.5,
        width = 6,
-       units = "in")
-
-
-
-##temporal figure of past temperature regime histogram ####
-
-ggplot(fishdat %>%
-         mutate(PastRegime = ifelse(wt_pred_new < lowerbreak,
-                                    "Cold",
-                                    ifelse(wt_pred_new > upperbreak,
-                                           "Warm",
-                                           "Intermediate")),
-                YearReal = Year + 1992),
-       aes(x = wt_pred_new, fill = PastRegime))+
-  facet_wrap(~YearReal)+
-  geom_histogram(binwidth = 1)+
-  xlab("Mean summer temperature (1990-94)")+
-  ylab("Number of sites")+
-  scale_y_continuous(limits = c(0,90))+
-  scale_fill_manual(name = "Past temperature regime",
-                    values = c("blue","violet","red"))+
-  theme_bw()+
-  theme(legend.position = "bottom",
-        legend.margin = margin(c(-5,0,0,0)),
-        axis.text = element_text(color = "black",
-                                 size = 8),
-        axis.title = element_text(size = 12),
-        strip.background = element_rect(fill = "white"),
-        strip.text = element_text(size = 8, color = "black"))
-
-ggsave("./Figures/TempHistogramThruTime.jpg", dpi = 300,
-       width = 6,
-       height = 5.5,
-       units = "in")
-
-
-##temporal figure of stream order histogram ####
-
-
-ggplot(fishdat %>% mutate(StreamOrder = as.numeric(StreamOrder)),aes(x = StreamOrder))+
-  facet_wrap(~CollectionYear)+
-  geom_histogram(binwidth = 1, fill = "grey78", color = "black")+
-  xlab("Stream order")+
-  ylab("Number of sites")+
-  scale_y_continuous(limits = c(0,165))+
-  scale_x_continuous(breaks = 1:10)+
-  theme_bw()+
-  theme(legend.position = "bottom",
-        legend.margin = margin(c(-5,0,0,0)),
-        axis.text = element_text(color = "black",
-                                 size = 8),
-        axis.title = element_text(size = 12),
-        strip.background = element_rect(fill = "white"),
-        strip.text = element_text(size = 8, color = "black"))
-
-ggsave("./Figures/StreamOrderHistorgrtmapamThruTime.jpg", dpi = 300,
-       width = 6,
-       height = 5.5,
        units = "in")

@@ -817,12 +817,6 @@ OPE_subfin = bind_rows(OPE_sub,
                        OPE_sublink %>%
                          dplyr::select(-genus))
 
-
-OPE_subfin %>%
-  filter(grepl("piceus", species))
-  filter(species %in% c("Ctenopharyngodon idella",
-                        "Mylopharyngodon piceus"))
-
 ###
 #prop non-native/game
 
@@ -1059,3 +1053,4 @@ fishdat_notnative_LCBD = fishdat_notnative_LCBD %>%
   mutate(Npass = ifelse(is.na(Npass)|Npass == 0,
                         1,
                         Npass))
+
